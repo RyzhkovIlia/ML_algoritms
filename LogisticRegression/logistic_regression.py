@@ -1,15 +1,5 @@
 import numpy as np
-import pandas as pd
 from scipy.optimize import fmin_tnc
-# import matplotlib.pyplot as plt
-
-# marks_df = pd.read_csv("marks.txt", header=None)
-# # X = feature values, all the columns except the last column
-# X = marks_df.iloc[:, :-1]
-
-# # y = target values, last column of the data frame
-# y = marks_df.iloc[:, -1]
-
 class LogisticRegressionGD:
     def __init__(self):
         """Logistic Regression Using Gradient Descent.
@@ -111,7 +101,8 @@ class LogisticRegressionGD:
         self.opt_weights = fmin_tnc(func=self.__cost_function, 
                                 x0=theta, 
                                 fprime=self.__gradient,
-                                args=(x, y.flatten()))
+                                args=(x, y.flatten()),
+                                disp=0)
         return self
     
     def predict(self, x):
@@ -126,26 +117,3 @@ class LogisticRegressionGD:
         """
         theta = self.opt_weights[0][:, np.newaxis]
         return self.__probability(theta.T, x).flatten()
-    
-# X = np.c_[np.ones((X.shape[0], 1)), X]
-# y = y[:, np.newaxis]
-# # Create a matrix for the weights of each attribute
-# theta = np.zeros((X.shape[1], 1))
-# log_reg = LogisticRegressionGD()
-# log_reg.fit(X, y, theta)
-# # pred = log_reg.predict(X)
-# # pred = (pred>0.5).astype(int)
-# # df = pd.DataFrame({"true":y.flatten(), 'pred':pred})
-# x_values = [np.min(X[:, 1] - 5), np.max(X[:, 2] + 5)]
-# params = log_reg.opt_weights[0]
-# y_values = - (params[0] + np.dot(params[1], x_values)) / params[2]
-
-# admitted = marks_df.loc[y == 1]
-# not_admitted = marks_df.loc[y == 0]
-# plt.scatter(admitted.iloc[:, 0], admitted.iloc[:, 1], s=10, label='Admitted')
-# plt.scatter(not_admitted.iloc[:, 0], not_admitted.iloc[:, 1], s=10, label='Not Admitted')
-# plt.plot(x_values, y_values, label='Decision Boundary')
-# plt.xlabel('Marks in 1st Exam')
-# plt.ylabel('Marks in 2nd Exam')
-# plt.legend()
-# plt.show()
