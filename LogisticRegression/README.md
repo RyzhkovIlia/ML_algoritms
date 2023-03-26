@@ -50,3 +50,10 @@ plt.legend()
 plt.show()
 ```
 ![image](https://user-images.githubusercontent.com/88197584/227803027-869b8af8-896e-4853-9bb6-1d63d4643663.png)
+
+The articles I relied on to create the class:
+ - https://towardsdatascience.com/building-a-logistic-regression-in-python-301d27367c24
+ - https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html
+ - https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.fmin_tnc.html
+
+P.S The next implementation will add l1, l2 and elasticnet regularization
