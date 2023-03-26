@@ -1,5 +1,5 @@
 # LinearRegressioinGD
-## Loss Function
+## Cost Function
 The loss is the error in our predicted value of weights and intercept. Our goal is to minimize this error to obtain the most accurate value of weights and intercept.
 We will use the Mean Squared Error function to calculate the loss. There are three steps in this function:
 
