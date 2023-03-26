@@ -16,8 +16,8 @@ class LinearRegressionGD:
                 penalty:str=None):
         method_list = ['l1', 'l2', 'elasticnet', None]
         assert \
-            penalty.lower() in method_list, \
-            f'This method not found. Please give one of this method {method_list}. Receive method = {penalty.lower()}'
+            (penalty is None)|(penalty in method_list), \
+            f'This method not found. Please give one of this method {method_list}. Receive method = {penalty}'
         self.__penalty = penalty
 
     def __check_params(self):
@@ -43,27 +43,28 @@ class LinearRegressionGD:
     def __calculate_gradient(self):
         """Function for find out weight and b gradients
         """
-        if self.__penalty.lower() == None:
+        if self.__penalty == None:
             # If the usual linear regression we find the gradient
-            self.__dW = (-2*np.dot(self.__X.T, self.__residuals))/self.__m
+            self.__dW = (-2*np.sum(np.dot(self.__X.T, self.__residuals)))/self.__m
 
-        elif self.__penalty.lower() == 'l2':
+        elif self.__penalty == 'l2':
             # If we have a ridge regression we find the gradient
-            self.__dW = ((-2*np.dot(self.__X.T, self.__residuals))+\
-                            (2*self.__C*self.coef_))/self.__m
+            self.__dW = ((-2*np.sum(np.dot(self.__X.T, self.__residuals)))+\
+                            (2*self.__C*np.sum(self.coef_)))/self.__m
             
-        elif self.__penalty.lower() == 'l1':
+        elif self.__penalty == 'l1':
             # If we have a lasso regression we find the gradient
             # Create a gradient matrix
             self.__dW = np.zeros(self.n_features_in_)
             # Going over each weight
             for j in range(self.n_features_in_) :
                 if self.coef_[j]>0 :
-                    self.__dW[j]=((-2*np.dot(self.__X.T, self.__residuals))+\
-                                    (self.__C*self.coef_[j]))/self.__m
+                    # print(self.__X)
+                    self.__dW[j]=(((-2*np.sum(np.dot(self.__X[:, j].T, self.__residuals)))+\
+                                    (self.__C*np.sum(self.coef_[j][0])))/self.__m)
                 else :
-                    self.__dW[j]=((-2*np.dot(self.__X.T, self.__residuals))-\
-                                    (self.__C*self.coef_[j]))/self.__m
+                    self.__dW[j]=(((-2*np.sum(np.dot(self.__X[:, j].T, self.__residuals)))-\
+                                    (self.__C*np.sum(self.coef_[j][0])))/self.__m)
                     
         else:
             # If we have elastic regression find the gradient
@@ -72,26 +73,28 @@ class LinearRegressionGD:
             # Going over each weight
             for j in range(self.n_features_in_) :
                 if self.coef_[j]>0 :
-                    self.__dW[j]=((-2*np.dot(self.__X.T, self.__residuals))+\
-                                    (self.__C*self.coef_[j])+\
-                                    (2*self.__C*self.coef_))/self.__m
+                    self.__dW[j]=((-2*np.sum(np.dot(self.__X[:, j].T, self.__residuals)))+\
+                                    (self.__C*np.sum(self.coef_[j]))+\
+                                    (2*self.__C*np.sum(self.coef_)))/self.__m
                 else :
-                    self.__dW[j]=((-2*np.dot(self.__X.T, self.__residuals))-\
-                                    (self.__C*self.coef_[j])+\
-                                    (2*self.__C*self.coef_))/self.__m
+                    self.__dW[j]=((-2*np.sum(np.dot(self.__X[:, j].T, self.__residuals)))-\
+                                    (self.__C*np.sum(self.coef_[j]))+\
+                                    (2*self.__C*np.sum(self.coef_)))/self.__m
         # Find the gradient for the free term b
-        self.__db = - 2 * np.sum(self.__residuals) / self.__m 
+        self.__db = (-2*np.sum(self.__residuals))/self.__m 
     
     def __update_weights(self):
         """Update weights and b
         """
         y_pred = self.predict(self.__X)
         # Deviation from the true value
-        self.__residuals = self.__y - y_pred
+        self.__residuals = self.__y-y_pred
+        if np.sum(self.__residuals) < -10e3:
+            self.__flag = False
         # Calculate gradients  
         self.__calculate_gradient()
         # Update the weights with the gradient found from the production MSE
-        self.coef_ -= self.__learning_rate*self.__dW
+        self.coef_ -= (self.__learning_rate*self.__dW).reshape((self.n_features_in_,1))
         # Update free member b
         self.intercept_ -= self.__learning_rate * self.__db
 
@@ -117,9 +120,10 @@ class LinearRegressionGD:
         """
         self.__X = x
         self.__y = y
-        self.__learning_rate = learning_rate if learning_rate is not None else 0.001
-        self.__n_iterations = n_iterations if n_iterations is not None else 1000
+        self.__learning_rate = learning_rate
+        self.__n_iterations = n_iterations
         self.__C = C
+        self.__flag = True
 
         # Check correct params
         self.__check_params()
@@ -132,8 +136,11 @@ class LinearRegressionGD:
         # Free member b
         self.intercept_ = 0
         for _ in range(self.__n_iterations):
+            if self.__flag:
             # Updating the weights
-            self.__update_weights() 
+                self.__update_weights()
+            else:
+                break
         return self
 
     def predict(self, 
