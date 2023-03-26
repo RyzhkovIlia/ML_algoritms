@@ -1,4 +1,4 @@
-# LinearRegressioinGD
+# LinearRegressionGD
 ## Cost Function
 The loss is the error in our predicted value of weights and intercept. Our goal is to minimize this error to obtain the most accurate value of weights and intercept.
 We will use the Mean Squared Error function to calculate the loss. There are three steps in this function:
@@ -91,3 +91,8 @@ plt.ylabel('y')
 plt.show()
 ```
 ![image](https://user-images.githubusercontent.com/88197584/227799856-167063f3-9275-4d49-a065-271553c1bdfc.png)
+
+The articles I relied on to create the class:
+ - https://towardsdatascience.com/linear-regression-using-python-b136c91bf0a2
+ - https://towardsdatascience.com/linear-regression-using-gradient-descent-97a6c8700931
+ - https://www.geeksforgeeks.org/implementation-of-lasso-regression-from-scratch-using-python/
