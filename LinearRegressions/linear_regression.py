@@ -1,11 +1,11 @@
 import numpy as np
 class LinearRegressionGD:
     """Linear Regression Using Gradient Descent.
-        Also Ridge, Lasso and Elastic Net regression
+        Also Ridge, Lasso and ElasticNet regression
     Parameters
     ----------
     eta : str
-        method: Must be linear, lasso, ridge or elastic
+        method: Must be linear, lasso, ridge or elasticnet
     Attributes
     ----------
     coef_ : weights/ after fitting the model
