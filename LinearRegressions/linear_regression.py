@@ -8,7 +8,7 @@ class LinearRegressionGD:
         method: Must be linear, lasso, ridge or elasticnet
     Attributes
     ----------
-    coef_ : weights/ after fitting the model
+    coef_ : weights after fitting the model
     intercept_ : free member of regression
     """
 
