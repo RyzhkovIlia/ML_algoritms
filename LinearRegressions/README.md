@@ -11,6 +11,7 @@ $$D_{weights} = {{-2 \over n} \sum_{i=0}^n{x_i(y_i - y_i^*)}}$$
 
 $$D_{intercept} = {{-2 \over n} \sum_{i=0}^n{(y_i - y_i^*)}}$$
 
+If one of the available regularizations is used, the regularization terms are added to the cost function.
 We repeat this process until our loss function is a very small value or ideally 0 (which means 0 error or 100% accuracy). The value of weights and intercept that we are left with now will be the optimum values.
 
 The following data can be taken as an example
