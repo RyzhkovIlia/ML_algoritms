@@ -16,82 +16,58 @@ We repeat this process until our loss function is a very small value or ideally 
 
 The following data can be taken as an example
 ```
-np.random.seed(42)
-x = np.random.rand(100, 1)
-y = 2 + 3 * x + np.random.rand(100, 1)
+x = np.random.rand(1000, 10)
+y = 2 + 3*x[:, 0].reshape((1000, 1))**2 + np.random.rand(1000, 1))
+```
+## How to use
+Model initialization
+```
+lin_reg = LinearRegressionGD(penalty='elasticnet',
+                            random_state=42,
+                            plot_loss=True)
+lin_reg.fit(X=x,
+            y=y,
+            learning_rate=0.1,
+            C=0.0001,
+            max_n_iterations=10000
+            )
+```
+Get Predict
+```
+prediction = lin_reg.predict(X=x)
+```
+Metrics
+```
+print('MAE', mean_absolute_error(y, prediction))
+print('MSE', mean_squared_error(y, prediction))
+print('RMSE', mean_squared_error(y, prediction, squared=False))
+print('MAPE', mean_absolute_percentage_error(y, prediction), '\n')
+```
+Check sklearn model
+```
+sk_lin = LinearRegression()
+sk_lin.fit(X=x, 
+            y=y)
+prediction_sk = sk_lin.predict(X=x)
+print('SKLEARN PREDICT')
+print('MAE', mean_absolute_error(y, prediction_sk))
+print('MSE', mean_squared_error(y, prediction_sk))
+print('RMSE', mean_squared_error(y, prediction_sk, squared=False))
+print('MAPE', mean_absolute_percentage_error(y, prediction_sk))
 ```
 ## Results
-### Penalty = None
 ```
-lin_reg = LinearRegressionGD(penalty=None)
-lin_reg.fit(x=x,
-    y=y,
-    learning_rate=0.01,
-    C=5,
-    n_iterations=666
-    )
-prediction = lin_reg.predict(x=x)
-plt.scatter(x, y, s=10, c='b')
-plt.plot(x, prediction, c='r')
-plt.xlabel('x')
-plt.ylabel('y')
-plt.show()
-```
-![image](https://user-images.githubusercontent.com/88197584/227799657-6363d30b-7448-45e5-be70-29e62a610360.png)
+MAE 0.3121887974679742
+RMSE 0.3826254095990843
+MAPE 0.09538290956625316
 
-### Penalty = l1
+SKLEARN PREDICT
+MAE 0.3015480403057931
+MSE 0.13252664637650863
+RMSE 0.3640420942370657
+MAPE 0.09227202516334462
 ```
-lin_reg = LinearRegressionGD(penalty='l1')
-lin_reg.fit(x=x,
-    y=y,
-    learning_rate=0.01,
-    C=5,
-    n_iterations=666
-    )
-prediction = lin_reg.predict(x=x)
-plt.scatter(x, y, s=10, c='b')
-plt.plot(x, prediction, c='r')
-plt.xlabel('x')
-plt.ylabel('y')
-plt.show()
-```
-![image](https://user-images.githubusercontent.com/88197584/227799765-ed9f1ac2-a1b2-4100-a5ad-9ab3aef9cbd8.png)
-
-### Penalty = l2
-```
-lin_reg = LinearRegressionGD(penalty='l2')
-lin_reg.fit(x=x,
-    y=y,
-    learning_rate=0.01,
-    C=5,
-    n_iterations=666
-    )
-prediction = lin_reg.predict(x=x)
-plt.scatter(x, y, s=10, c='b')
-plt.plot(x, prediction, c='r')
-plt.xlabel('x')
-plt.ylabel('y')
-plt.show()
-```
-![image](https://user-images.githubusercontent.com/88197584/227799830-503d4afa-a848-4799-8ab7-a934962ae27a.png)
-
-### Penalty = elasticnet
-```
-lin_reg = LinearRegressionGD(penalty='elasticnet')
-lin_reg.fit(x=x,
-    y=y,
-    learning_rate=0.01,
-    C=5,
-    n_iterations=666
-    )
-prediction = lin_reg.predict(x=x)
-plt.scatter(x, y, s=10, c='b')
-plt.plot(x, prediction, c='r')
-plt.xlabel('x')
-plt.ylabel('y')
-plt.show()
-```
-![image](https://user-images.githubusercontent.com/88197584/227799856-167063f3-9275-4d49-a065-271553c1bdfc.png)
+![image](https://user-images.githubusercontent.com/88197584/228607062-f02b7086-5aec-4021-84b6-824229f7b948.png)
 
 The articles I relied on to create the class:
  - https://towardsdatascience.com/linear-regression-using-python-b136c91bf0a2
