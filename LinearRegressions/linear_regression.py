@@ -1,11 +1,15 @@
 import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_absolute_percentage_error
 class LinearRegressionGD:
     """Linear Regression Using Gradient Descent.
         Also Ridge, Lasso and ElasticNet regression
     Parameters
     ----------
-    eta : str
-        method: Must be linear, lasso, ridge or elasticnet
+    penalty (str, optional): _description_. Defaults to None.
+
+    random_state (int, optional): _description_. Defaults to None.
     Attributes
     ----------
     coef_ : weights after fitting the model
@@ -13,15 +17,33 @@ class LinearRegressionGD:
     """
 
     def __init__(self,
-                penalty:str=None):
+                penalty:str=None,
+                random_state:int=None,
+                plot_loss:bool=False):
+
         method_list = ['l1', 'l2', 'elasticnet', None]
         assert \
             (penalty is None)|(penalty in method_list), \
             f'This method not found. Please give one of this method {method_list}. Receive method = {penalty}'
+        assert\
+            (isinstance(random_state, int))|(random_state is None),\
+            f'N_iterations must be only integer and > 0. Receive {type(random_state)} = {random_state}.'
+        assert\
+            isinstance(plot_loss, bool),\
+            f'plot_loss must be only bool. Receive {type(plot_loss)} = {plot_loss}.'
+        
+        self.__random_state = random_state
         self.__penalty = penalty
+        self.__plot_loss = plot_loss
 
-    def __check_params(self):
-        """Check input params
+        np.random.seed(seed=self.__random_state)
+
+    def __check_params(self, 
+                        X):
+        """Check corrections parameters
+
+        Args:
+            X: array-like, shape = [n_features, n_samples]
         """
         assert\
             (isinstance(self.__learning_rate, float))|(isinstance(self.__learning_rate, int))&(self.__learning_rate>0)&(self.__learning_rate<=1),\
@@ -33,125 +55,186 @@ class LinearRegressionGD:
             isinstance(self.__C, float)|isinstance(self.__C, int),\
             f'C must be only integer or float. Receive {type(self.__C)}.'
         assert\
-            (self.__X.shape[0]>0)&(self.__X.shape[1]>0),\
+            (X.shape[0]>0)&(X.shape[1]>0),\
             f'X must not be empty.'
-        assert\
-            (self.__y.shape[0]==self.__X.shape[0]),\
-            f'Y shape must be equal X shape.'
 
+    def __calculate_gradient(self, 
+                            X):
+        """Function for find out weight and bias gradients
 
-    def __calculate_gradient(self):
-        """Function for find out weight and b gradients
+        Args:
+            X: array-like, shape = [n_features, n_samples]
         """
-        if self.__penalty == None:
-            # If the usual linear regression we find the gradient
-            self.__dW = (-2*np.sum(np.dot(self.__X.T, self.__residuals)))/self.__m
+        # If the usual linear regression we find the gradient, lasso, ridge and elastic
+        self.__dW = -2*(np.dot(X, self.__residuals))/self.__m if self.__penalty == None else \
+            (-2*((np.dot(X, self.__residuals))+(self.__C*np.sum(np.abs(self.coef_))))/self.__m if self.__penalty == 'l1' else \
+                (-2*((np.dot(X, self.__residuals))+(2*self.__C*np.sum(self.coef_)))/self.__m if self.__penalty == 'l2' else 
+                    -2*((np.dot(X, self.__residuals))+(self.__C*np.sum(np.abs(self.coef_)))+(2*self.__C*np.sum(self.coef_)))/self.__m))
 
-        elif self.__penalty == 'l2':
-            # If we have a ridge regression we find the gradient
-            self.__dW = ((-2*np.sum(np.dot(self.__X.T, self.__residuals)))+\
-                            (2*self.__C*np.sum(self.coef_)))/self.__m
-            
-        elif self.__penalty == 'l1':
-            # If we have a lasso regression we find the gradient
-            # Create a gradient matrix
-            self.__dW = np.zeros(self.n_features_in_)
-            # Going over each weight
-            for j in range(self.n_features_in_) :
-                if self.coef_[j]>0 :
-                    # print(self.__X)
-                    self.__dW[j]=(((-2*np.sum(np.dot(self.__X[:, j].T, self.__residuals)))+\
-                                    (self.__C*np.sum(self.coef_[j][0])))/self.__m)
-                else :
-                    self.__dW[j]=(((-2*np.sum(np.dot(self.__X[:, j].T, self.__residuals)))-\
-                                    (self.__C*np.sum(self.coef_[j][0])))/self.__m)
-                    
-        else:
-            # If we have elastic regression find the gradient
-            # Create a gradient matrix
-            self.__dW = np.zeros(self.n_features_in_)
-            # Going over each weight
-            for j in range(self.n_features_in_) :
-                if self.coef_[j]>0 :
-                    self.__dW[j]=((-2*np.sum(np.dot(self.__X[:, j].T, self.__residuals)))+\
-                                    (self.__C*np.sum(self.coef_[j]))+\
-                                    (2*self.__C*np.sum(self.coef_)))/self.__m
-                else :
-                    self.__dW[j]=((-2*np.sum(np.dot(self.__X[:, j].T, self.__residuals)))-\
-                                    (self.__C*np.sum(self.coef_[j]))+\
-                                    (2*self.__C*np.sum(self.coef_)))/self.__m
-        # Find the gradient for the free term b
-        self.__db = (-2*np.sum(self.__residuals))/self.__m 
+        # Find the gradient for the free term bias
+        self.__db = -2*np.sum(self.__residuals)/self.__m
     
-    def __update_weights(self):
-        """Update weights and b
-        """
-        y_pred = self.predict(self.__X)
-        # Deviation from the true value
-        self.__residuals = self.__y-y_pred
-        if np.sum(self.__residuals) < -10e3:
-            self.__flag = False
-        # Calculate gradients  
-        self.__calculate_gradient()
-        # Update the weights with the gradient found from the production MSE
-        self.coef_ -= (self.__learning_rate*self.__dW).reshape((self.n_features_in_,1))
-        # Update free member b
-        self.intercept_ -= self.__learning_rate * self.__db
+    def __update_weights(self, 
+                            X, 
+                            y):
+        """Update weights and bias
 
+        Args:
+            X: array-like, shape = [n_features, n_samples]
+            y: array-like, shape = [n_samples, n_target_values]
+        """
+        # Get result
+        y_pred = self.intercept_ + np.dot(self.coef_.T, X)
+        y_pred = y_pred.reshape((y_pred.shape[1],1))
+
+        # Deviation from the true value
+        self.__residuals = y - y_pred
+
+        cost = np.sum(self.__residuals ** 2)/self.__m
+        self.cost_list.append(cost)
+
+        # Stop condition
+        if (len(self.cost_list)>2):
+            self.__flag = False if np.sum(self.__residuals) < -10e3 or (((self.cost_list[-2]/cost)-1)*1000)<1 else True
+        else:
+            pass
+
+        # Calculate gradients  
+        self.__calculate_gradient(X=X)
+        gradients = {"derivative_weight": self.__dW,"derivative_bias": self.__db}
+
+        # Update the weights with the gradient found from the production MSE
+        self.coef_ -= (self.__learning_rate*gradients["derivative_weight"])
+
+        # Update free member b
+        self.intercept_ -= (self.__learning_rate * gradients["derivative_bias"])
+
+    def __plot_cost(self):
+        """Show loss curve
+        """
+        plt.plot(range(len(self.cost_list)), self.cost_list)
+        plt.xticks(range(len(self.cost_list)), rotation='vertical')
+        plt.xlabel("Number of Iteration")
+        plt.ylabel("Cost")
+        plt.show()
+
+    def __initialize_weights_and_bias(self,
+                                        X)->tuple:
+        """Create a matrix for the weights of each attribute and the free member bias
+
+
+        Args:
+            X: array-like, shape = [n_features, n_samples]
+
+
+        Returns:
+            tuple: Weights and bias matrixs
+        """
+
+        weights = np.random.rand(X.shape[0], 1)
+        bias = np.random.random()
+        return (weights, bias)
+    
     def fit(self, 
-            x, 
+            X, 
             y,
             learning_rate:float=0.001,
             C:float=1.0,
-            n_iterations:int=1000):
+            max_n_iterations:int=1000,
+            ):
         """Fit the training data
         Parameters
         ----------
-        x : array-like, shape = [n_samples, n_features]
+        x: array-like, shape = [n_samples, n_features]
             Training samples
-        y : array-like, shape = [n_samples, n_target_values]
+        y: array-like, shape = [n_samples, n_target_values]
             Target values
         learning_rate: float, learning rate coeff
         C: float , Inverse of regularization strength; must be a positive float. Like in support vector machines, smaller values specify stronger regularization.
-        n_iterations: int, count of inerations
+        max_n_iterations: int, count of inerations
         Returns
         -------
         self : object
         """
-        self.__X = x
-        self.__y = y
         self.__learning_rate = learning_rate
-        self.__n_iterations = n_iterations
+        self.__n_iterations = max_n_iterations
         self.__C = C
         self.__flag = True
+        self.cost_list = []
 
         # Check correct params
-        self.__check_params()
-        # Dimensionality of features
-        self.n_features_in_ = self.__X.shape[1]
-        # Create a matrix for the weights of each attribute
-        self.coef_ = np.zeros((self.n_features_in_, 1))
-        # Number of training examples
-        self.__m = self.__X.shape[0]
-        # Free member b
-        self.intercept_ = 0
+        self.__check_params(X=X)
+        X = X.T
+        y = np.array(y)
+        assert\
+            (y.shape[0]==X.shape[1]),\
+            f'Y shape must be equal X shape.'
+        y = y.reshape((y.shape[0], 1))
+
+        # Create a matrix for the weights of each attribute and free member b
+        self.coef_, self.intercept_ = self.__initialize_weights_and_bias(X=X)
+
+        # Dimensionality of features and number of training examples
+        self.n_features_in_, self.__m = X.shape
+
         for _ in range(self.__n_iterations):
             if self.__flag:
             # Updating the weights
-                self.__update_weights()
+                self.__update_weights(X=X,
+                                        y=y)
             else:
                 break
+        if self.__plot_loss:
+            #Plot
+            self.__plot_cost()
         return self
 
     def predict(self, 
-                x):
+                X):
         """ Predicts the value after the model has been trained.
         Parameters
         ----------
-        x : array-like, shape = [n_samples, n_features]
+        X : array-like, shape = [n_samples, n_features]
             Test samples
         Returns
         -------
         Predicted value
         """
-        return self.intercept_ + np.dot(x, self.coef_)
+
+        # Check correct params
+        self.__check_params(X=X)
+        return self.intercept_ + np.dot(self.coef_.T, X.T).flatten()
+
+#Create dataset
+x = np.random.rand(1000, 10)
+y = 2 + 3*x[:, 0].reshape((1000, 1))**2 + np.random.rand(1000, 1)
+
+#Use class LinearRegressionGD
+lin_reg = LinearRegressionGD(penalty='elasticnet',
+                            random_state=42,
+                            plot_loss=True)
+lin_reg.fit(X=x,
+            y=y,
+            learning_rate=0.1,
+            C=0.0001,
+            max_n_iterations=10000
+            )
+#Get Predict
+prediction = lin_reg.predict(X=x)
+
+#Metrics
+print('MAE', mean_absolute_error(y, prediction))
+print('MSE', mean_squared_error(y, prediction))
+print('RMSE', mean_squared_error(y, prediction, squared=False))
+print('MAPE', mean_absolute_percentage_error(y, prediction), '\n')
+
+#Check sklearn model
+sk_lin = LinearRegression()
+sk_lin.fit(X=x, 
+            y=y)
+prediction_sk = sk_lin.predict(X=x)
+print('SKLEARN PREDICT')
+print('MAE', mean_absolute_error(y, prediction_sk))
+print('MSE', mean_squared_error(y, prediction_sk))
+print('RMSE', mean_squared_error(y, prediction_sk, squared=False))
+print('MAPE', mean_absolute_percentage_error(y, prediction_sk))
