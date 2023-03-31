@@ -88,13 +88,13 @@ class LogisticRegressionGD:
         """_summary_
         """
         # If the usual linear regression we find the gradient, lasso, ridge and elastic
-        self.__dW = -2*(np.dot(X, self.__residuals))/self.__m if self.__penalty == None else \
-            (-2*((np.dot(X, self.__residuals))+(self.__C*np.sum(np.abs(self.coef_))))/self.__m if self.__penalty == 'l1' else \
-                (-2*((np.dot(X, self.__residuals))+(2*self.__C*np.sum(self.coef_)))/self.__m if self.__penalty == 'l2' else 
-                    -2*((np.dot(X, self.__residuals))+(self.__C*np.sum(np.abs(self.coef_)))+(2*self.__C*np.sum(self.coef_)))/self.__m))
+        self.__dW = -1*(np.dot(X, self.__residuals))/self.__m if self.__penalty == None else \
+            (-1*((np.dot(X, self.__residuals))+(self.__C*np.sum(np.abs(self.coef_))))/self.__m if self.__penalty == 'l1' else \
+                (-1*((np.dot(X, self.__residuals))+(2*self.__C*np.sum(self.coef_)))/self.__m if self.__penalty == 'l2' else 
+                    -1*((np.dot(X, self.__residuals))+(self.__C*np.sum(np.abs(self.coef_)))+(2*self.__C*np.sum(self.coef_)))/self.__m))
         
         # Find the gradient for the free term b
-        self.__db = -2*np.sum(self.__residuals)/self.__m
+        self.__db = -1*np.sum(self.__residuals)/self.__m
 
     def __update_weights(self,
                             X,
