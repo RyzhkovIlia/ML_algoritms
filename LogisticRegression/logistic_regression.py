@@ -64,28 +64,37 @@ class LogisticRegressionGD:
         return 1 / (1 + np.exp(-X))
     
     def __net_input(self,
-                    X):
-        """_summary_
+                    X)->np.array:
+        """
+
+        Args:
+            X (array-like): Training samples
 
         Returns:
-            _type_: _description_
+            np.array
         """
         # Computes the weighted sum of inputs
         return np.dot(self.coef_.T, X) + self.intercept_
 
     def __probability(self, 
-                        X):
-        """_summary_
+                        X)->np.array:
+        """"Сalculate the probability
+
+        Args:
+            X (array-like): Training samples
 
         Returns:
-            _type_: _description_
+            np.array
         """
         # Returns the probability after passing through sigmoid
         return self.__sigmoid(self.__net_input(X=X))
 
     def __calculate_gradient(self, 
                             X):
-        """_summary_
+        """Calculating the Gradient
+
+        Args:
+            X (array-like): Training samples
         """
         # If the usual linear regression we find the gradient, lasso, ridge and elastic
         self.__dW = -1*(np.dot(X, self.__residuals))/self.__m if self.__penalty == None else \
@@ -100,6 +109,10 @@ class LogisticRegressionGD:
                             X,
                             y):
         """Update weights and b
+
+        Args:
+            X (array-like): Training samples
+            y (array-like): Traning target
         """
         # Get probability result
         y_pred = self.__probability(X=X)
@@ -157,18 +170,14 @@ class LogisticRegressionGD:
             C:float=1.0,
             max_n_iterations:int=1000,
             ):
-        """_summary_
+        """Fit the training data
 
         Args:
-            X (_type_): _description_
-            y (_type_): _description_
+            X array-like, shape = [n_samples, n_features]
+            y array-like, shape = [n_samples, 1]
             learning_rate (float, optional): _description_. Defaults to 0.001.
             C (float, optional): _description_. Defaults to 1.0.
             max_n_iterations (int, optional): _description_. Defaults to 1000.
-            stop_cost (float, optional): _description_. Defaults to 0.1.
-
-        Returns:
-            _type_: _description_
         """
         # self.__X = X
         self.__learning_rate = learning_rate
@@ -220,7 +229,7 @@ class LogisticRegressionGD:
         return self.__probability(X=X.T).flatten()
 
 #Read data
-data = pd.read_csv('data.csv', header=None)
+data = pd.read_csv('./LogisticRegression/data.csv', header=None)
 x, y = data.iloc[:, :-1], data.iloc[:, -1]
 
 #Normalization

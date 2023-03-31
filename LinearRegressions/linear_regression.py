@@ -145,9 +145,9 @@ class LinearRegressionGD:
         """Fit the training data
         Parameters
         ----------
-        x: array-like, shape = [n_samples, n_features]
+        X: array-like, shape = [n_samples, n_features]
             Training samples
-        y: array-like, shape = [n_samples, n_target_values]
+        y: array-like, shape = [n_samples, 1]
             Target values
         learning_rate: float, learning rate coeff
         C: float , Inverse of regularization strength; must be a positive float. Like in support vector machines, smaller values specify stronger regularization.
