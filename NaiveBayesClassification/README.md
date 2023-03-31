@@ -13,12 +13,15 @@ $$P(A|B) = {P(B|A)*P(A) \over {P(B)}}$$
 This Bayes theorem can now be used to create the following classification model:
 
 $$P(y|x_1, x_2, ..x_N) = {P(x_1|y)*P(x_2|y)*..P(x_N|y) * P(y) \over {P(x_1)*P(x_2)*..P(x_N)}}$$
+
 Now you can get the values for each of the parameters: just take the data and substitute them into the equation. For all combinations of these parameters, the denominator does not change, it remains static. So you can discard it by introducing proportionality into the equation:
 
 $$P(y|x_1, x_2, ..., x_N) \propto {P(y)\prod_{i=1}^NP(x_i|y)}$$
-there are cases when the classification can be multivariate. So we have to find the class variable (y) with maximum probability.
+
+There are cases when the classification can be multivariate. So we have to find the class variable (y) with maximum probability.
 
 $$y = {argmax_iP(y)\prod_{i=1}^NP(x_i|y)}$$
+
 Using this function, you can get a class based on the available predictors/parameters.
 
 The posterior probability P(y|X) is calculated as follows: first, a frequency table is created for each parameter relative to the desired result. Then the likelihood tables are generated from the frequency tables, and then the posterior probability for each class is calculated using Bayes equation. The class with the highest posterior probability will be the predicted result.
@@ -28,6 +31,7 @@ Gaussian distribution: continuous values of all characteristics are assumed to h
 It is assumed that we have a Gaussian probability of characteristics, so the conditional probability will be determined as follows:
 
 $$P(x) = { \exp^{-{(x-\mu)^2 \over {2*\sigma^2}}} \over {\sqrt{2*\pi * \sigma^2}}}$$
+
 ## Data
 The following data can be taken as an example
 ```
