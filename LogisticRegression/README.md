@@ -18,7 +18,7 @@ We will use BinaryCrossEntropy
 $$J(\theta) = {-{1 \over n} \sum_{i=1}^n[y^ilog(f(x^i))+(1-y^i)log(1-f(x^i))]}$$
 We will use gradient descent to minimize the cost function. The gradient w.r.t any parameter can be given by
 
-$${\partial{J(\theta)} \over \partial{\theta_i}} = {-2 \over n} \sum_{i=1}^n(f(x^i)-y^i)x^T$$
+$${\partial{J(\theta)} \over \partial{\theta_i}} = {-1 \over n} \sum_{i=1}^n(f(x^i)-y^i)x^T$$
 
 ## How to use
 Read dataset
