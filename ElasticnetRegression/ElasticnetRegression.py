@@ -208,7 +208,7 @@ np.random.seed(seed)
 x = np.random.rand(1000, 10)
 y = 2 + 3*x[:, 0].reshape((1000, 1))**2 + np.random.rand(1000, 1)
 
-#Use class LinearRegressionGD
+#Use class ElasticnetRegressionGD
 lin_reg = ElasticnetRegressionGD(random_state=seed,
                             plot_loss=False)
 lin_reg.fit(X=x,
