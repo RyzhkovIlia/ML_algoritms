@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_absolute_percentage_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_absolute_percentage_error, r2_score
 class LinearRegressionGD:
     """Linear Regression Using Gradient Descent.
         
@@ -75,7 +75,7 @@ class LinearRegressionGD:
         # Deviation from the true value
         self.__residuals = y - y_pred
 
-        cost = np.sum(self.__residuals ** 2)/self.__m
+        cost = mean_squared_error(y, y_pred)
         self.cost_list.append(cost)
 
         # Stop condition
@@ -97,8 +97,8 @@ class LinearRegressionGD:
     def __plot_cost(self):
         """Show loss curve
         """
-        plt.plot(range(len(self.cost_list)), self.cost_list)
-        plt.xticks(range(len(self.cost_list)), rotation='vertical')
+        plt.plot(range(0, len(self.cost_list), len(self.cost_list)//10), self.cost_list[::len(self.cost_list)//10])
+        plt.xticks(range(0, len(self.cost_list), len(self.cost_list)//10), rotation='vertical')
         plt.xlabel("Number of Iteration")
         plt.ylabel("Cost")
         plt.show()
@@ -197,12 +197,14 @@ class LinearRegressionGD:
         return self.intercept_ + np.dot(self.coef_.T, X.T).flatten()
 
 #Create dataset
+seed = 42
+np.random.seed(seed)
 x = np.random.rand(1000, 10)
 y = 2 + 3*x[:, 0].reshape((1000, 1))**2 + np.random.rand(1000, 1)
 
 
 #Use class LinearRegressionGD
-lin_reg = LinearRegressionGD(random_state=42,
+lin_reg = LinearRegressionGD(random_state=seed,
                             plot_loss=False)
 lin_reg.fit(X=x,
             y=y,
@@ -218,7 +220,8 @@ prediction = lin_reg.predict(X=x)
 print('MAE', mean_absolute_error(y, prediction))
 print('MSE', mean_squared_error(y, prediction))
 print('RMSE', mean_squared_error(y, prediction, squared=False))
-print('MAPE', mean_absolute_percentage_error(y, prediction), '\n')
+print('MAPE', mean_absolute_percentage_error(y, prediction))
+print('R2', r2_score(y, prediction), '\n')
 
 #Check sklearn model
 sk_lin = LinearRegression()
@@ -230,3 +233,4 @@ print('MAE', mean_absolute_error(y, prediction_sk))
 print('MSE', mean_squared_error(y, prediction_sk))
 print('RMSE', mean_squared_error(y, prediction_sk, squared=False))
 print('MAPE', mean_absolute_percentage_error(y, prediction_sk))
+print('R2', r2_score(y, prediction_sk))
