@@ -79,12 +79,12 @@ class LassoRegressionGD:
         # Deviation from the true value
         self.__residuals = y - y_pred
 
-        cost = np.sum(self.__residuals ** 2)/self.__m
+        cost = cost = mean_squared_error(y, y_pred)
         self.cost_list.append(cost)
 
         # Stop condition
         if (len(self.cost_list)>2):
-            self.__flag = False if np.sum(self.__residuals) < -10e30 or (((self.cost_list[-2]/cost)-1)*10000)<1 else True
+            self.__flag = False if np.sum(self.__residuals) < -10e30 or (((self.cost_list[-2]/cost)-1)*100)<3 else True
         else:
             pass
 
