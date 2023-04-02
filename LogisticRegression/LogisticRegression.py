@@ -92,12 +92,12 @@ class LogisticRegressionGD:
         """
         # If the usual linear regression we find the gradient, lasso, ridge and elastic
         self.__dW = -1*(np.dot(X, self.__residuals))/self.__m if self.__penalty == None else \
-            (-1*((np.dot(X, self.__residuals))+(self.__C*np.sum(np.abs(self.coef_))))/self.__m if self.__penalty == 'l1' else \
-                (-1*((np.dot(X, self.__residuals))+(2*self.__C*np.sum(self.coef_)))/self.__m if self.__penalty == 'l2' else 
-                    -1*((np.dot(X, self.__residuals))+(self.__C*np.sum(np.abs(self.coef_)))+(2*self.__C*np.sum(self.coef_)))/self.__m))
+            (-1*((np.dot(X, self.__residuals))+(self.__C*np.abs(self.coef_))))/self.__m if self.__penalty == 'l1' else \
+                (-1*((np.dot(X, self.__residuals))+(2*self.__C*self.coef_)))/self.__m if self.__penalty == 'l2' else 
+                    -1*((np.dot(X, self.__residuals))+(self.__C*np.abs(self.coef_)))+(2*self.__C*self.coef_)))/self.__m))
         
         # Find the gradient for the free term b
-        self.__db = -1*np.sum(self.__residuals)/self.__m
+        self.__db = -2*np.sum(self.__residuals)/self.__m
 
     def __update_weights(self,
                             X,
@@ -116,7 +116,7 @@ class LogisticRegressionGD:
 
         # stop condition
         if (len(self.cost_list)>2):
-            self.__flag = False if np.sum(self.__residuals) < -10e3 or (((self.cost_list[-2]/cost)-1)*10000)<1 else True
+            self.__flag = False if np.sum(self.__residuals) < -10e30 or (((self.cost_list[-2]/cost)-1)*1000)<2 else True
         else:
             pass
 
@@ -132,11 +132,16 @@ class LogisticRegressionGD:
     def __plot_cost(self):
         """Show loss curve
         """
-        plt.plot(range(len(self.cost_list)), self.cost_list)
-        plt.xticks(range(len(self.cost_list)), rotation='vertical')
+        len_cost = len(self.cost_list)
+        spl = 10
+        if len_cost < 10:
+            spl = len_cost
+        plt.plot(range(0, len_cost, len_cost//spl), self.cost_list[::len_cost//spl])
+        plt.xticks(range(0, len_cost, len_cost//spl), rotation='vertical')
         plt.xlabel("Number of Iteration")
         plt.ylabel("Cost")
         plt.show()
+
 
     def __initialize_weights_and_bias(self,
                                         X)->tuple:
@@ -254,7 +259,7 @@ log_reg.fit(X = x_train,
             y = y_train, 
             C = 0.01, 
             learning_rate=0.02, 
-            max_n_iterations=1000,
+            max_n_iterations=10000,
             batch_size=128)
 
 # Find optimal threshhold
@@ -273,7 +278,7 @@ print('recall', recall_score(y_test, pred), '\n')
 
 #Check sklearn model
 sk_model = LogisticRegression(C = 0.01, 
-                                max_iter=1000, 
+                                max_iter=10000, 
                                 random_state=42)
 sk_model.fit(X=x_train, y = y_train)
 sk_pred = sk_model.predict(x_test)
