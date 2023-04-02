@@ -116,7 +116,7 @@ class LogisticRegressionGD:
 
         # stop condition
         if (len(self.cost_list)>2):
-            self.__flag = False if np.sum(self.__residuals) < -10e30 or (((self.cost_list[-2]/cost)-1)*1000)<2 else True
+            self.__flag = False if np.sum(self.__residuals) < -10e30 else True
         else:
             pass
 
