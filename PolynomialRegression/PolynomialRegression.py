@@ -1,14 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_absolute_percentage_error
-class LinearRegressionGD:
+from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_absolute_percentage_error, r2_score
+class PolynomialRegressionGD:
     """Linear Regression Using Gradient Descent.
         Also Ridge, Lasso and ElasticNet regression
     Parameters
     ----------
     penalty (str, optional): _description_. Defaults to None.
-
     random_state (int, optional): _description_. Defaults to None.
     Attributes
     ----------
@@ -41,7 +41,6 @@ class LinearRegressionGD:
     def __check_params(self, 
                         X):
         """Check corrections parameters
-
         Args:
             X: array-like, shape = [n_features, n_samples]
         """
@@ -57,11 +56,16 @@ class LinearRegressionGD:
         assert\
             (X.shape[0]>0)&(X.shape[1]>0),\
             f'X must not be empty.'
+        assert\
+            (isinstance(self.__batch_size, int))|(self.__batch_size is None),\
+            f'Batch_size must be only integer or None and >0. Receive {self.__batch_size}.'
+        assert\
+            (isinstance(self.__degree, list))|(self.__degree is None),\
+            f'Degree must be only list or None and. Receive {self.__degree}.'
 
     def __calculate_gradient(self, 
                             X):
         """Function for find out weight and bias gradients
-
         Args:
             X: array-like, shape = [n_features, n_samples]
         """
@@ -78,7 +82,6 @@ class LinearRegressionGD:
                             X, 
                             y):
         """Update weights and bias
-
         Args:
             X: array-like, shape = [n_features, n_samples]
             y: array-like, shape = [n_samples, n_target_values]
@@ -95,7 +98,7 @@ class LinearRegressionGD:
 
         # Stop condition
         if (len(self.cost_list)>2):
-            self.__flag = False if np.sum(self.__residuals) < -10e3 or (((self.cost_list[-2]/cost)-1)*1000)<1 else True
+            self.__flag = False if np.sum(self.__residuals) < -10e30 or (((self.cost_list[-2]/cost)-1)*10000)<1 else True
         else:
             pass
 
@@ -121,12 +124,8 @@ class LinearRegressionGD:
     def __initialize_weights_and_bias(self,
                                         X)->tuple:
         """Create a matrix for the weights of each attribute and the free member bias
-
-
         Args:
             X: array-like, shape = [n_features, n_samples]
-
-
         Returns:
             tuple: Weights and bias matrixs
         """
@@ -135,12 +134,31 @@ class LinearRegressionGD:
         bias = np.random.random()
         return (weights, bias)
     
+    def __x_poly_transform(self, 
+                            X):
+        """_summary_
+
+        Args:
+            X: array-like, shape = [n_samples, n_features]
+        """
+        
+        # making a copy of X.
+        X_copy = X.copy()
+        
+        # Appending columns of higher degrees to X.
+        for i in self.__degree:
+            X = np.append(X, X_copy**i, axis=1)
+                
+        return X
+
     def fit(self, 
             X, 
             y,
+            batch_size:int=None,
             learning_rate:float=0.001,
             C:float=1.0,
             max_n_iterations:int=1000,
+            degree:list=None
             ):
         """Fit the training data
         Parameters
@@ -149,6 +167,7 @@ class LinearRegressionGD:
             Training samples
         y: array-like, shape = [n_samples, 1]
             Target values
+        batch_size: Number of batches
         learning_rate: float, learning rate coeff
         C: float , Inverse of regularization strength; must be a positive float. Like in support vector machines, smaller values specify stronger regularization.
         max_n_iterations: int, count of inerations
@@ -160,10 +179,14 @@ class LinearRegressionGD:
         self.__n_iterations = max_n_iterations
         self.__C = C
         self.__flag = True
+        self.__batch_size = batch_size
+        self.__degree = degree
         self.cost_list = []
 
         # Check correct params
         self.__check_params(X=X)
+        if self.__degree is not None:
+            X = self.__x_poly_transform(X=X)
         X = X.T
         y = np.array(y)
         assert\
@@ -179,8 +202,19 @@ class LinearRegressionGD:
 
         for _ in range(self.__n_iterations):
             if self.__flag:
-            # Updating the weights
-                self.__update_weights(X=X,
+                if self.__batch_size is not None:
+                    for i in range((self.__m-1)//self.__batch_size + 1):
+                        # Defining batches.
+                        start_i = i*self.__batch_size
+                        end_i = start_i + self.__batch_size
+                        xb = X[:,start_i:end_i]
+                        yb = y[start_i:end_i]
+                        # Updating the weights
+                        self.__update_weights(X=xb,
+                                        y=yb)
+                else:
+                    # Updating the weights
+                    self.__update_weights(X=X,
                                         y=y)
             else:
                 break
@@ -200,24 +234,31 @@ class LinearRegressionGD:
         -------
         Predicted value
         """
-
         # Check correct params
         self.__check_params(X=X)
+        if self.__degree is not None:
+            X = self.__x_poly_transform(X=X)
         return self.intercept_ + np.dot(self.coef_.T, X.T).flatten()
 
 #Create dataset
-x = np.random.rand(1000, 10)
-y = 2 + 3*x[:, 0].reshape((1000, 1))**2 + np.random.rand(1000, 1)
+# x = np.random.rand(1000, 10)
+# y = 2 + 3*x[:, 0].reshape((1000, 1))**2 + np.random.rand(1000, 1)
+
+np.random.seed(42)
+x = np.random.rand(1000,5)
+y = 5*((x[:, 1].reshape((x.shape[0], 1)))**(2)) + np.random.rand(1000,1)
 
 #Use class LinearRegressionGD
-lin_reg = LinearRegressionGD(penalty='elasticnet',
+lin_reg = PolynomialRegressionGD(penalty='l1',
                             random_state=42,
-                            plot_loss=True)
+                            plot_loss=False)
 lin_reg.fit(X=x,
             y=y,
-            learning_rate=0.1,
+            learning_rate=0.01,
             C=0.0001,
-            max_n_iterations=10000
+            max_n_iterations=10000,
+            batch_size=128,
+            degree=[2]
             )
 #Get Predict
 prediction = lin_reg.predict(X=x)
@@ -226,15 +267,19 @@ prediction = lin_reg.predict(X=x)
 print('MAE', mean_absolute_error(y, prediction))
 print('MSE', mean_squared_error(y, prediction))
 print('RMSE', mean_squared_error(y, prediction, squared=False))
-print('MAPE', mean_absolute_percentage_error(y, prediction), '\n')
-
+print('MAPE', mean_absolute_percentage_error(y, prediction))
+print('R2', r2_score(y, prediction), '\n')
 #Check sklearn model
 sk_lin = LinearRegression()
-sk_lin.fit(X=x, 
+x_copy = x.copy()
+poly = PolynomialFeatures(2)
+x_copy =poly.fit_transform(x_copy)
+sk_lin.fit(X=x_copy, 
             y=y)
-prediction_sk = sk_lin.predict(X=x)
+prediction_sk = sk_lin.predict(X=x_copy)
 print('SKLEARN PREDICT')
 print('MAE', mean_absolute_error(y, prediction_sk))
 print('MSE', mean_squared_error(y, prediction_sk))
 print('RMSE', mean_squared_error(y, prediction_sk, squared=False))
 print('MAPE', mean_absolute_percentage_error(y, prediction_sk))
+print('R2', r2_score(y, prediction_sk))

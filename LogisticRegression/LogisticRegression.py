@@ -51,6 +51,9 @@ class LogisticRegressionGD:
         assert\
             (X.shape[0]>0)&(X.shape[1]>0),\
             f'X must not be empty.'
+        assert\
+            (isinstance(self.__batch_size, int))|(self.__batch_size is None),\
+            f'Batch_size must be only integer or None and >0. Receive {self.__batch_size}.'
         
     def __sigmoid(self, 
                 X):
@@ -64,37 +67,28 @@ class LogisticRegressionGD:
         return 1 / (1 + np.exp(-X))
     
     def __net_input(self,
-                    X)->np.array:
-        """
-
-        Args:
-            X (array-like): Training samples
+                    X):
+        """_summary_
 
         Returns:
-            np.array
+            _type_: _description_
         """
         # Computes the weighted sum of inputs
         return np.dot(self.coef_.T, X) + self.intercept_
 
     def __probability(self, 
-                        X)->np.array:
-        """"Сalculate the probability
-
-        Args:
-            X (array-like): Training samples
+                        X):
+        """_summary_
 
         Returns:
-            np.array
+            _type_: _description_
         """
         # Returns the probability after passing through sigmoid
         return self.__sigmoid(self.__net_input(X=X))
 
     def __calculate_gradient(self, 
                             X):
-        """Calculating the Gradient
-
-        Args:
-            X (array-like): Training samples
+        """_summary_
         """
         # If the usual linear regression we find the gradient, lasso, ridge and elastic
         self.__dW = -1*(np.dot(X, self.__residuals))/self.__m if self.__penalty == None else \
@@ -109,10 +103,6 @@ class LogisticRegressionGD:
                             X,
                             y):
         """Update weights and b
-
-        Args:
-            X (array-like): Training samples
-            y (array-like): Traning target
         """
         # Get probability result
         y_pred = self.__probability(X=X)
@@ -166,6 +156,7 @@ class LogisticRegressionGD:
     def fit(self, 
             X, 
             y,
+            batch_size:int=None,
             learning_rate:float=0.001,
             C:float=1.0,
             max_n_iterations:int=1000,
@@ -173,16 +164,21 @@ class LogisticRegressionGD:
         """Fit the training data
 
         Args:
-            X array-like, shape = [n_samples, n_features]
-            y array-like, shape = [n_samples, 1]
+            X (_type_): _description_
+            y (_type_): _description_
+            batch_size: Number of batches
             learning_rate (float, optional): _description_. Defaults to 0.001.
             C (float, optional): _description_. Defaults to 1.0.
             max_n_iterations (int, optional): _description_. Defaults to 1000.
+            stop_cost (float, optional): _description_. Defaults to 0.1.
+
+        Returns:
+            _type_: _description_
         """
-        # self.__X = X
         self.__learning_rate = learning_rate
         self.__n_iterations = max_n_iterations
         self.__C = C
+        self.__batch_size = batch_size
         self.__flag = True
         self.cost_list = []
 
@@ -203,8 +199,19 @@ class LogisticRegressionGD:
 
         for _ in range(self.__n_iterations):
             if self.__flag:
-            # Updating the weights
-                self.__update_weights(X=X,
+                if self.__batch_size is not None:
+                    for i in range((self.__m-1)//self.__batch_size + 1):
+                        # Defining batches.
+                        start_i = i*self.__batch_size
+                        end_i = start_i + self.__batch_size
+                        xb = X[:,start_i:end_i]
+                        yb = y[start_i:end_i]
+                        # Updating the weights
+                        self.__update_weights(X=xb,
+                                        y=yb)
+                else:
+                    # Updating the weights
+                    self.__update_weights(X=X,
                                         y=y)
             else:
                 break
@@ -229,7 +236,7 @@ class LogisticRegressionGD:
         return self.__probability(X=X.T).flatten()
 
 #Read data
-data = pd.read_csv('./LogisticRegression/data.csv', header=None)
+data = pd.read_csv('data.csv', header=None)
 x, y = data.iloc[:, :-1], data.iloc[:, -1]
 
 #Normalization
@@ -242,12 +249,13 @@ x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_
 #Use class LogisticRegressionGD
 log_reg = LogisticRegressionGD(penalty='l2',
                                 random_state=42,
-                                plot_loss=True) # l1, l2, elasticnet
+                                plot_loss=False) # l1, l2, elasticnet
 log_reg.fit(X = x_train, 
             y = y_train, 
             C = 0.01, 
             learning_rate=0.02, 
-            max_n_iterations=1000)
+            max_n_iterations=1000,
+            batch_size=128)
 
 # Find optimal threshhold
 precisions, recalls, thresholds = precision_recall_curve(y_train, log_reg.predict(x_train))
