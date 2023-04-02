@@ -1,4 +1,4 @@
-# LinearRegressionGD
+# PolynomialRegressionGD
 ## Cost Function
 The loss is the error in our predicted value of weights and intercept. Our goal is to minimize this error to obtain the most accurate value of weights and intercept.
 We will use the Mean Squared Error function to calculate the loss. There are three steps in this function:
@@ -16,21 +16,24 @@ We repeat this process until our loss function is a very small value or ideally 
 
 The following data can be taken as an example
 ```
-x = np.random.rand(1000, 10)
-y = 2 + 3*x[:, 0].reshape((1000, 1))**2 + np.random.rand(1000, 1))
+seed = 42
+np.random.seed(seed)
+x = np.random.rand(1000,5)
+y = 5*((x[:, 1].reshape((x.shape[0], 1)))**(2)) + np.random.rand(1000,1)
 ```
 ## How to use
 Model initialization
 ```
-lin_reg = LinearRegressionGD(penalty='elasticnet',
-                            random_state=42,
+lin_reg = PolynomialRegressionGD(penalty='l1',
+                            random_state=seed,
                             plot_loss=True)
 lin_reg.fit(X=x,
             y=y,
-            learning_rate=0.1,
+            learning_rate=0.01,
             C=0.0001,
-            max_n_iterations=10000
-            )
+            max_n_iterations=10000,
+            batch_size=128,
+            degree=[2]
 ```
 Get Predict
 ```
@@ -41,14 +44,18 @@ Metrics
 print('MAE', mean_absolute_error(y, prediction))
 print('MSE', mean_squared_error(y, prediction))
 print('RMSE', mean_squared_error(y, prediction, squared=False))
-print('MAPE', mean_absolute_percentage_error(y, prediction), '\n')
+print('MAPE', mean_absolute_percentage_error(y, prediction))
+print('R2', r2_score(y, prediction), '\n')
 ```
 Check sklearn model
 ```
 sk_lin = LinearRegression()
-sk_lin.fit(X=x, 
+x_copy = x.copy()
+poly = PolynomialFeatures(2)
+x_copy =poly.fit_transform(x_copy)
+sk_lin.fit(X=x_copy, 
             y=y)
-prediction_sk = sk_lin.predict(X=x)
+prediction_sk = sk_lin.predict(X=x_copy)
 print('SKLEARN PREDICT')
 print('MAE', mean_absolute_error(y, prediction_sk))
 print('MSE', mean_squared_error(y, prediction_sk))
@@ -57,17 +64,20 @@ print('MAPE', mean_absolute_percentage_error(y, prediction_sk))
 ```
 ## Results
 ```
-MAE 0.3121887974679742
-RMSE 0.3826254095990843
-MAPE 0.09538290956625316
+MAE 0.2642696930369943
+MSE 0.09883823649640755
+RMSE 0.3143854902765195
+MAPE 0.2974067548498449
+R2 0.958454781036168
 
 SKLEARN PREDICT
-MAE 0.3015480403057931
-MSE 0.13252664637650863
-RMSE 0.3640420942370657
-MAPE 0.09227202516334462
+MAE 0.2463234881082973
+MSE 0.08193473073072353
+RMSE 0.2862424334907799
+MAPE 0.35510135457299064
+R2 0.965559924482523
 ```
-![image](https://user-images.githubusercontent.com/88197584/228607062-f02b7086-5aec-4021-84b6-824229f7b948.png)
+![image](https://user-images.githubusercontent.com/88197584/229350603-be91f9bf-5e83-4859-aed6-8cf680da3b1a.png)
 
 The articles I relied on to create the class:
  - https://towardsdatascience.com/linear-regression-using-python-b136c91bf0a2
