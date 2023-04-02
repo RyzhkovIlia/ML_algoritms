@@ -47,7 +47,9 @@ print('R2', r2_score(y, prediction), '\n')
 ```
 Check sklearn model
 ```
-sk_lin = LinearRegression()
+sk_lin = Ridge(alpha=0.0001,
+                max_iter=10000,
+                random_state=seed)
 sk_lin.fit(X=x, 
             y=y)
 prediction_sk = sk_lin.predict(X=x)
