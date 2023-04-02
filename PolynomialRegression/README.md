@@ -1,4 +1,12 @@
 # PolynomialRegressionGD
+In this folder, i will look at the Polynomial Regression algorithm which can be used to fit non-linear data by modifying the hypothesis function and by adding new features we want to add to the input.
+Polynomial Regression is just another version of the standard Linear Regression.
+In linear regression with one predictor, we have the following equation:
+$$Y = {bias + w * x}$$
+
+This linear equation can be used to represent a linear relationship. But in polynomial regression we have a polynomial equation of degree n , represented as:
+$$Y = {bias + w_1 * x + w_2 * x^2 + w_3 * x^3 + ... + w_N * x^N}$$
+
 ## Cost Function
 The loss is the error in our predicted value of weights and intercept. Our goal is to minimize this error to obtain the most accurate value of weights and intercept.
 We will use the Mean Squared Error function to calculate the loss. There are three steps in this function:
@@ -80,6 +88,5 @@ R2 0.965559924482523
 ![image](https://user-images.githubusercontent.com/88197584/229350603-be91f9bf-5e83-4859-aed6-8cf680da3b1a.png)
 
 The articles I relied on to create the class:
- - https://towardsdatascience.com/linear-regression-using-python-b136c91bf0a2
- - https://towardsdatascience.com/linear-regression-using-gradient-descent-97a6c8700931
- - https://www.geeksforgeeks.org/implementation-of-lasso-regression-from-scratch-using-python/
+ - https://towardsdatascience.com/polynomial-regression-in-python-b69ab7df6105
+ - https://morioh.com/p/28d4fa379f60
