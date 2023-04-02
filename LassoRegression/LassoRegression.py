@@ -84,7 +84,7 @@ class LassoRegressionGD:
 
         # Stop condition
         if (len(self.cost_list)>2):
-            self.__flag = False if np.sum(self.__residuals) < -10e30 or (((self.cost_list[-2]/cost)-1)*100)<3 else True
+            self.__flag = False if np.sum(self.__residuals) < -10e30 else True
         else:
             pass
 
