@@ -4,8 +4,7 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_absolute_percentage_error, r2_score
 class PolynomialRegressionGD:
-    """Linear Regression Using Gradient Descent.
-        Also Ridge, Lasso and ElasticNet regression
+    """Polynomial Regression Using Gradient Descent.
     Parameters
     ----------
     penalty (str, optional): _description_. Defaults to None.
@@ -71,9 +70,9 @@ class PolynomialRegressionGD:
         """
         # If the usual linear regression we find the gradient, lasso, ridge and elastic
         self.__dW = -2*(np.dot(X, self.__residuals))/self.__m if self.__penalty == None else \
-            (-2*((np.dot(X, self.__residuals))+(self.__C*np.sum(np.abs(self.coef_))))/self.__m if self.__penalty == 'l1' else \
-                (-2*((np.dot(X, self.__residuals))+(2*self.__C*np.sum(self.coef_)))/self.__m if self.__penalty == 'l2' else 
-                    -2*((np.dot(X, self.__residuals))+(self.__C*np.sum(np.abs(self.coef_)))+(2*self.__C*np.sum(self.coef_)))/self.__m))
+            (-2*((np.dot(X, self.__residuals))+(self.__C*np.abs(self.coef_)))/self.__m if self.__penalty == 'l1' else \
+                (-2*((np.dot(X, self.__residuals))+(2*self.__C*self.coef_))/self.__m if self.__penalty == 'l2' else 
+                    -2*((np.dot(X, self.__residuals))+(self.__C*np.abs(self.coef_))+(2*self.__C*self.coef_))/self.__m))
 
         # Find the gradient for the free term bias
         self.__db = -2*np.sum(self.__residuals)/self.__m
@@ -93,12 +92,12 @@ class PolynomialRegressionGD:
         # Deviation from the true value
         self.__residuals = y - y_pred
 
-        cost = np.sum(self.__residuals ** 2)/self.__m
+        cost = mean_squared_error(y, y_pred)
         self.cost_list.append(cost)
 
         # Stop condition
         if (len(self.cost_list)>2):
-            self.__flag = False if np.sum(self.__residuals) < -10e30 or (((self.cost_list[-2]/cost)-1)*10000)<1 else True
+            self.__flag = False if np.sum(self.__residuals) < -10e30 or (((self.cost_list[-2]/cost)-1)*100)<3 else True
         else:
             pass
 
@@ -115,8 +114,12 @@ class PolynomialRegressionGD:
     def __plot_cost(self):
         """Show loss curve
         """
-        plt.plot(range(len(self.cost_list)), self.cost_list)
-        plt.xticks(range(len(self.cost_list)), rotation='vertical')
+        len_cost = len(self.cost_list)
+        spl = 10
+        if len_cost < spl:
+            spl = len_cost
+        plt.plot(range(0, len_cost, len_cost//spl), self.cost_list[::len_cost//spl])
+        plt.xticks(range(0, len_cost, len_cost//spl), rotation='vertical')
         plt.xlabel("Number of Iteration")
         plt.ylabel("Cost")
         plt.show()
@@ -248,7 +251,7 @@ np.random.seed(42)
 x = np.random.rand(1000,5)
 y = 5*((x[:, 1].reshape((x.shape[0], 1)))**(2)) + np.random.rand(1000,1)
 
-#Use class LinearRegressionGD
+#Use class PolynomialRegressionGD
 lin_reg = PolynomialRegressionGD(penalty='l1',
                             random_state=42,
                             plot_loss=False)
@@ -273,7 +276,7 @@ print('R2', r2_score(y, prediction), '\n')
 sk_lin = LinearRegression()
 x_copy = x.copy()
 poly = PolynomialFeatures(2)
-x_copy =poly.fit_transform(x_copy)
+x_copy = poly.fit_transform(x_copy)
 sk_lin.fit(X=x_copy, 
             y=y)
 prediction_sk = sk_lin.predict(X=x_copy)
