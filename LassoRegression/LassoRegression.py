@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import Lasso
-from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_absolute_percentage_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_absolute_percentage_error, r2_score
 class LassoRegressionGD:
     """Lasso Regression Using Gradient Descent.
         
@@ -59,7 +59,7 @@ class LassoRegressionGD:
             X: array-like, shape = [n_features, n_samples]
         """
         # If the usual linear regression we find the gradient, lasso, ridge and elastic
-        self.__dW =-2*((np.dot(X, self.__residuals))+(self.__C*np.sum(np.abs(self.coef_))))/self.__m
+        self.__dW =-2*((np.dot(X, self.__residuals))+(self.__C*np.abs(self.coef_)))/self.__m
 
         # Find the gradient for the free term bias
         self.__db = -2*np.sum(self.__residuals)/self.__m
@@ -101,8 +101,8 @@ class LassoRegressionGD:
     def __plot_cost(self):
         """Show loss curve
         """
-        plt.plot(range(len(self.cost_list)), self.cost_list)
-        plt.xticks(range(len(self.cost_list)), rotation='vertical')
+        plt.plot(range(0, len(self.cost_list), len(self.cost_list)//10), self.cost_list[::len(self.cost_list)//10])
+        plt.xticks(range(0, len(self.cost_list), len(self.cost_list)//10), rotation='vertical')
         plt.xlabel("Number of Iteration")
         plt.ylabel("Cost")
         plt.show()
@@ -203,11 +203,13 @@ class LassoRegressionGD:
         return self.intercept_ + np.dot(self.coef_.T, X.T).flatten()
 
 #Create dataset
+seed = 42
+np.random.seed(seed)
 x = np.random.rand(1000, 10)
 y = 2 + 3*x[:, 0].reshape((1000, 1))**2 + np.random.rand(1000, 1)
 
 #Use class LinearRegressionGD
-lin_reg = LassoRegressionGD(random_state=42,
+lin_reg = LassoRegressionGD(random_state=seed,
                             plot_loss=False)
 lin_reg.fit(X=x,
             y=y,
@@ -223,7 +225,8 @@ prediction = lin_reg.predict(X=x)
 print('MAE', mean_absolute_error(y, prediction))
 print('MSE', mean_squared_error(y, prediction))
 print('RMSE', mean_squared_error(y, prediction, squared=False))
-print('MAPE', mean_absolute_percentage_error(y, prediction), '\n')
+print('MAPE', mean_absolute_percentage_error(y, prediction))
+print('R2', r2_score(y, prediction), '\n')
 
 #Check sklearn model
 sk_lin = Lasso(max_iter=10000,
@@ -237,3 +240,4 @@ print('MAE', mean_absolute_error(y, prediction_sk))
 print('MSE', mean_squared_error(y, prediction_sk))
 print('RMSE', mean_squared_error(y, prediction_sk, squared=False))
 print('MAPE', mean_absolute_percentage_error(y, prediction_sk))
+print('R2', r2_score(y, prediction_sk))
