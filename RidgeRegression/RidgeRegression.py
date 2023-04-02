@@ -82,7 +82,7 @@ class RidgeRegressionGD:
 
         # Stop condition
         if (len(self.cost_list)>2):
-            self.__flag = False if np.sum(self.__residuals) < -10e30 or (((self.cost_list[-2]/cost)-1)*100)<3 else True
+            self.__flag = False if np.sum(self.__residuals) < -10e30 else True
         else:
             pass
 
@@ -207,7 +207,7 @@ np.random.seed(seed)
 x = np.random.rand(1000, 10)
 y = 2 + 3*x[:, 0].reshape((1000, 1))**2 + np.random.rand(1000, 1)
 
-#Use class LinearRegressionGD
+#Use class RidgeRegressionGD
 lin_reg = RidgeRegressionGD(random_state=seed,
                             plot_loss=True)
 lin_reg.fit(X=x,
