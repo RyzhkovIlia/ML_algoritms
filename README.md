@@ -7,4 +7,4 @@ Machine learning algoritms realization
 4. [ElasticnetRegression](https://github.com/RyzhkovIlya/ML_algoritms/tree/main/ElasticnetRegression)
 5. [PolynomialRegression](https://github.com/RyzhkovIlya/ML_algoritms/tree/main/PolynomialRegression)
 6. [LogisticRegression](https://github.com/RyzhkovIlya/ML_algoritms/tree/main/LogisticRegression)
-7. [NaiveBayesClassification](https://github.com/RyzhkovIlya/ML_algoritms/tree/main/NaiveBayesClassification)
+7. [GaussianNaiveBayes](https://github.com/RyzhkovIlya/ML_algoritms/tree/main/NaiveBayesClassification)
