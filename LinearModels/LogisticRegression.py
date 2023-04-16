@@ -5,7 +5,7 @@ from sklearn.metrics import recall_score, precision_score, precision_recall_curv
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
-
+from sklearn.datasets import make_classification
 
 class LogisticRegressionGD:
     def __init__(self,
@@ -92,9 +92,9 @@ class LogisticRegressionGD:
         """
         # If the usual linear regression we find the gradient, lasso, ridge and elastic
         self.__dW = -1*(np.dot(X, self.__residuals))/self.__m if self.__penalty == None else \
-            (-1*((np.dot(X, self.__residuals))+(self.__C*np.abs(self.coef_))))/self.__m if self.__penalty == 'l1' else \
-                (-1*((np.dot(X, self.__residuals))+(2*self.__C*self.coef_)))/self.__m if self.__penalty == 'l2' else 
-                    -1*((np.dot(X, self.__residuals))+(self.__C*np.abs(self.coef_)))+(2*self.__C*self.coef_)))/self.__m))
+            (-1*((np.dot(X, self.__residuals))+(self.__C*np.abs(self.coef_)))/self.__m if self.__penalty == 'l1' else \
+                (-1*((np.dot(X, self.__residuals))+(2*self.__C*self.coef_))/self.__m if self.__penalty == 'l2' else 
+                    (-1*(np.dot(X, self.__residuals))+(self.__C*np.abs(self.coef_))+(2*self.__C*self.coef_))/self.__m))
         
         # Find the gradient for the free term b
         self.__db = -2*np.sum(self.__residuals)/self.__m
@@ -134,14 +134,13 @@ class LogisticRegressionGD:
         """
         len_cost = len(self.cost_list)
         spl = 10
-        if len_cost < 10:
+        if len_cost < spl:
             spl = len_cost
         plt.plot(range(0, len_cost, len_cost//spl), self.cost_list[::len_cost//spl])
         plt.xticks(range(0, len_cost, len_cost//spl), rotation='vertical')
         plt.xlabel("Number of Iteration")
         plt.ylabel("Cost")
         plt.show()
-
 
     def __initialize_weights_and_bias(self,
                                         X)->tuple:
@@ -189,6 +188,8 @@ class LogisticRegressionGD:
 
         # Check correct params
         self.__check_params(X=X)
+        if isinstance(X, np.ndarray)==False:
+            X = np.array(X)
         X = X.T
         y = np.array(y)
         assert\
@@ -238,28 +239,32 @@ class LogisticRegressionGD:
 
         # Check correct params
         self.__check_params(X=X)
+        if isinstance(X, np.ndarray)==False:
+            X = np.array(X)
         return self.__probability(X=X.T).flatten()
 
 #Read data
-data = pd.read_csv('data.csv', header=None)
-x, y = data.iloc[:, :-1], data.iloc[:, -1]
+seed = 42
+X, y = make_classification(n_samples=1000,n_features=5)
+# data = pd.read_csv('data.csv', header=None)
+# x, y = data.iloc[:, :-1], data.iloc[:, -1]
 
 #Normalization
 scaler = StandardScaler()
-x = scaler.fit_transform(x)
+X = scaler.fit_transform(X)
+x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-#Train-test split
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
-
+# x_train = pd.DataFrame(x_train)
 #Use class LogisticRegressionGD
+
 log_reg = LogisticRegressionGD(penalty='l2',
                                 random_state=42,
-                                plot_loss=False) # l1, l2, elasticnet
+                                plot_loss=True) # l1, l2, elasticnet
 log_reg.fit(X = x_train, 
             y = y_train, 
             C = 0.01, 
-            learning_rate=0.02, 
-            max_n_iterations=10000,
+            learning_rate=0.01, 
+            max_n_iterations=2000,
             batch_size=128)
 
 # Find optimal threshhold
@@ -278,8 +283,9 @@ print('recall', recall_score(y_test, pred), '\n')
 
 #Check sklearn model
 sk_model = LogisticRegression(C = 0.01, 
-                                max_iter=10000, 
-                                random_state=42)
+                                max_iter=2000, 
+                                random_state=42,
+                                penalty='l2')
 sk_model.fit(X=x_train, y = y_train)
 sk_pred = sk_model.predict(x_test)
 print('SKLEARN PREDICT')

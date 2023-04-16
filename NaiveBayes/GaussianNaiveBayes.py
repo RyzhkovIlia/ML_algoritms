@@ -1,9 +1,6 @@
 import math
 import numpy as np
 import pandas as pd
-from sklearn.datasets import load_iris
-from sklearn.naive_bayes import GaussianNB
-from sklearn.metrics import recall_score, precision_score
 
 class GaussianNaiveBayes:
     def __init__(self):
@@ -17,7 +14,6 @@ class GaussianNaiveBayes:
                                         Likelihood * Class prior probability
         Posterior Probability = -------------------------------------
                                     Predictor prior probability
-
                     P(B|A) * p(A)
         P(A|B) = ------------------ 
                         P(B)
@@ -51,7 +47,6 @@ class GaussianNaiveBayes:
             X:pd.DataFrame, 
             y:pd.Series):
         """Fit the training data
-
         Args:
             X (pd.DataFrame): Pandas dataframe without target feature
             y (pd.Series): Pandas series target feature
@@ -89,10 +84,8 @@ class GaussianNaiveBayes:
                 X:pd.DataFrame)->np.array:
         """Predicts the value after the model has been trained.
         Calculates Posterior probability P(c|x) 
-
         Args:
             X (pd.DataFrame): Pandas dataframe without target feature
-
         Returns:
             np.array: Predict
         """
@@ -120,32 +113,3 @@ class GaussianNaiveBayes:
             results.append(result)
 
         return np.array(results)
-    
-#Read data
-X  = load_iris().data
-y = load_iris().target
-data = pd.concat([pd.DataFrame(X, columns=['featuere_'+str(i) for i in range(1, X.shape[1]+1)]), 
-                pd.Series(y, name='target')], 
-                axis=1)
-X = data.iloc[:, :-1]
-y = data['target']
-
-#Use class GaussianNaiveBayes
-mod = GaussianNaiveBayes()
-mod.fit(X=X, 
-        y=y)
-pred_gaus = mod.predict(X)
-
-#Metrics
-print('precision', precision_score(y, pred_gaus, average='macro'))
-print('recall', recall_score(y, pred_gaus, average='macro'), '\n')
-
-#Check sklearn model
-sk_model = GaussianNB()
-sk_model.fit(X=X,
-            y=y)
-pred_sk = sk_model.predict(X=X)
-
-print('SKLEARN PREDICT')
-print('precision', precision_score(y, pred_sk, average='macro'))
-print('recall', recall_score(y, pred_sk, average='macro'))

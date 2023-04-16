@@ -1,9 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.linear_model import Ridge
+from sklearn.linear_model import Lasso
 from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_absolute_percentage_error, r2_score
-class RidgeRegressionGD:
-    """Ridge Regression Using Gradient Descent.
+from sklearn.datasets import make_regression
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+class LassoRegressionGD:
+    """Lasso Regression Using Gradient Descent.
+        
     Parameters
     ----------
     random_state (int, optional): _description_. Defaults to None.
@@ -14,9 +19,9 @@ class RidgeRegressionGD:
     """
 
     def __init__(self,
-                penalty:str=None,
                 random_state:int=None,
                 plot_loss:bool=False):
+
         assert\
             (isinstance(random_state, int))|(random_state is None),\
             f'N_iterations must be only integer and > 0. Receive {type(random_state)} = {random_state}.'
@@ -58,7 +63,8 @@ class RidgeRegressionGD:
             X: array-like, shape = [n_features, n_samples]
         """
         # If the usual linear regression we find the gradient, lasso, ridge and elastic
-        self.__dW = -2*((np.dot(X, self.__residuals))+(2*self.__C*self.coef_))/self.__m
+        self.__dW =-2*((np.dot(X, self.__residuals))+(self.__C*np.abs(self.coef_)))/self.__m
+
         # Find the gradient for the free term bias
         self.__db = -2*np.sum(self.__residuals)/self.__m
     
@@ -99,8 +105,12 @@ class RidgeRegressionGD:
     def __plot_cost(self):
         """Show loss curve
         """
-        plt.plot(range(0, len(self.cost_list), len(self.cost_list)//10), self.cost_list[::len(self.cost_list)//10])
-        plt.xticks(range(0, len(self.cost_list), len(self.cost_list)//10), rotation='vertical')
+        len_cost = len(self.cost_list)
+        spl = 10
+        if len_cost < spl:
+            spl = len_cost
+        plt.plot(range(0, len_cost, len_cost//spl), self.cost_list[::len_cost//spl])
+        plt.xticks(range(0, len_cost, len_cost//spl), rotation='vertical')
         plt.xlabel("Number of Iteration")
         plt.ylabel("Cost")
         plt.show()
@@ -149,7 +159,6 @@ class RidgeRegressionGD:
 
         # Check correct params
         self.__check_params(X=X)
-
         X = X.T
         y = np.array(y)
         assert\
@@ -203,40 +212,43 @@ class RidgeRegressionGD:
 
 #Create dataset
 seed = 42
-np.random.seed(seed)
-x = np.random.rand(1000, 10)
-y = 2 + 3*x[:, 0].reshape((1000, 1))**2 + np.random.rand(1000, 1)
+X, y = make_regression(n_samples=1000,n_features=5)
 
-#Use class RidgeRegressionGD
-lin_reg = RidgeRegressionGD(random_state=seed,
+#Normalization
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=seed)
+
+#Use class LinearRegressionGD
+lin_reg = LassoRegressionGD(random_state=seed,
                             plot_loss=True)
-lin_reg.fit(X=x,
-            y=y,
+lin_reg.fit(X=X_train,
+            y=y_train,
             learning_rate=0.01,
-            C=0.0001,
-            max_n_iterations=10000,
+            C=0.001,
+            max_n_iterations=200,
             batch_size=128
             )
 #Get Predict
-prediction = lin_reg.predict(X=x)
+prediction = lin_reg.predict(X=X_test)
 
 #Metrics
-print('MAE', mean_absolute_error(y, prediction))
-print('MSE', mean_squared_error(y, prediction))
-print('RMSE', mean_squared_error(y, prediction, squared=False))
-print('MAPE', mean_absolute_percentage_error(y, prediction))
-print('R2', r2_score(y, prediction), '\n')
+print('MAE', mean_absolute_error(y_test, prediction))
+print('MSE', mean_squared_error(y_test, prediction))
+print('RMSE', mean_squared_error(y_test, prediction, squared=False))
+print('MAPE', mean_absolute_percentage_error(y_test, prediction))
+print('R2', r2_score(y_test, prediction), '\n')
 
 #Check sklearn model
-sk_lin = Ridge(alpha=0.0001,
-                max_iter=10000,
-                random_state=42)
-sk_lin.fit(X=x, 
-            y=y)
-prediction_sk = sk_lin.predict(X=x)
+sk_lin = Lasso(max_iter=200,
+                alpha=0.001,
+                random_state=seed)
+sk_lin.fit(X=X_train, 
+            y=y_train)
+prediction_sk = sk_lin.predict(X=X_test)
 print('SKLEARN PREDICT')
-print('MAE', mean_absolute_error(y, prediction_sk))
-print('MSE', mean_squared_error(y, prediction_sk))
-print('RMSE', mean_squared_error(y, prediction_sk, squared=False))
-print('MAPE', mean_absolute_percentage_error(y, prediction_sk))
-print('R2', r2_score(y, prediction_sk))
+print('MAE', mean_absolute_error(y_test, prediction_sk))
+print('MSE', mean_squared_error(y_test, prediction_sk))
+print('RMSE', mean_squared_error(y_test, prediction_sk, squared=False))
+print('MAPE', mean_absolute_percentage_error(y_test, prediction_sk))
+print('R2', r2_score(y_test, prediction_sk))

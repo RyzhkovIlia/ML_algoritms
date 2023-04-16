@@ -47,8 +47,10 @@ y = data['target']
 Model initialization
 ```
 mod = GaussianNaiveBayes()
-mod.fit(X=X, 
-        y=y)
+mod.fit(
+    X=X, 
+    y=y
+    )
 ```
 Get Predict
 ```
@@ -62,8 +64,10 @@ print('recall', recall_score(y, pred_gaus, average='macro'), '\n')
 Check sklearn model
 ```
 sk_model = GaussianNB()
-sk_model.fit(X=X,
-            y=y)
+sk_model.fit(
+    X=X,
+    y=y
+    )
 pred_sk = sk_model.predict(X=X)
 print('SKLEARN PREDICT')
 print('precision', precision_score(y, pred_sk, average='macro'))
