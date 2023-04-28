@@ -58,6 +58,7 @@ pred_gaus = mod.predict(X)
 ```
 Metrics
 ```
+print("MY_CLASSIFICATION")
 print('precision', precision_score(y, pred_gaus, average='macro'))
 print('recall', recall_score(y, pred_gaus, average='macro'), '\n')
 ```
@@ -75,12 +76,13 @@ print('recall', recall_score(y, pred_sk, average='macro'))
 ```
 ## Results
 ```
-precision 0.96
-recall 0.96 
+MY_CLASSIFICATION
+precision  = 0.96
+recall = 0.96 
 
 SKLEARN PREDICT
-precision 0.96
-recall 0.96
+precision  = 0.96
+recall = 0.96
 ```
 
 The articles I relied on to create the class:

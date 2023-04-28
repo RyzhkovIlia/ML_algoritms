@@ -23,7 +23,7 @@ print('R2', r2_score(y_test,gb_pred), '\n')
 
 #Check sklearn model
 sk_gb_reg = GradientBoostingRegressor(learning_rate=0.1, max_depth=5, min_samples_split=4)
-sk_gb_reg.fit(X=X_train, y=y_train)
+sk_gb_reg.fit(X=X_train, y=y_train, verbose=10)
 prediction_sk = sk_gb_reg.predict(X=X_test)
 print('SKLEARN PREDICT')
 print('MAE', mean_absolute_error(y_test, prediction_sk))

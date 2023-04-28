@@ -233,6 +233,7 @@ lin_reg.fit(X=X_train,
 prediction = lin_reg.predict(X=X_test)
 
 #Metrics
+print("MY_REGRESSION")
 print('MAE', mean_absolute_error(y_test, prediction))
 print('MSE', mean_squared_error(y_test, prediction))
 print('RMSE', mean_squared_error(y_test, prediction, squared=False))

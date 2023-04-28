@@ -59,6 +59,7 @@ prediction = lin_model.predict(X=X_test)
 ```
 Metrics
 ```
+print("MY_REGRESSION")
 print('MAE', mean_absolute_error(y_test, prediction))
 print('MSE', mean_squared_error(y_test, prediction))
 print('RMSE', mean_squared_error(y_test, prediction, squared=False))
@@ -78,11 +79,29 @@ sk_lin.fit(
     )
 prediction_sk = sk_lin.predict(X=x)
 print('SKLEARN PREDICT')
+
 print('MAE', mean_absolute_error(y_test, prediction_sk))
 print('MSE', mean_squared_error(y_test, prediction_sk))
 print('RMSE', mean_squared_error(y_test, prediction_sk, squared=False))
 print('MAPE', mean_absolute_percentage_error(y_test, prediction_sk))
 print('R2', r2_score(y_test, prediction_sk))
+```
+
+## Results
+```
+MY_REGRESSION
+MAE 2.4186300309201383
+MSE 9.63782100528331
+RMSE 3.1044840159490774
+MAPE 0.24552226539264047
+R2 0.9993361710596366
+
+SKLEARN PREDICT
+MAE 0.005201623038300201
+MSE 4.3689148922275886e-05
+RMSE 0.006609776767960918
+MAPE 0.00014266110385012748
+R2 0.999999996990801
 ```
 
 The articles I relied on to create the class:
@@ -159,6 +178,7 @@ pred = (pred>custom_threshold).astype(int)
 ```
 Metrics
 ```
+print("MY_CLASSIFICATION")
 print('precision', precision_score(y_test, pred))
 print('recall', recall_score(y_test, pred), '\n')
 ```
@@ -178,12 +198,13 @@ print('recall', recall_score(y_test, sk_pred))
 ```
 ## Results
 ```
-precision 0.978494623655914
-recall 0.91
+MY_CLASSIFICATION
+precision = 0.978494623655914
+recall = 0.91
 
 SKLEARN PREDICT
-precision 1.0
-recall 0.83
+precision = 1.0
+recall = 0.83
 ```
 
 The articles I relied on to create the class:

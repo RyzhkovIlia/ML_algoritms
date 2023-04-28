@@ -100,7 +100,7 @@ class KNNClassifier():
             neighbors = np.zeros(self.n_neighbors)
             neighbors = self.__find_neighbors(query)
             # most frequent class in K neighbors
-            pred[ind] = mode(neighbors)[0][0]    
+            pred[ind] = mode(neighbors, keepdims = True)[0][0]    
         return pred.flatten()
     
 class KNNRegressor(): 

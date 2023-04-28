@@ -4,10 +4,13 @@ from sklearn.datasets import make_classification
 from GaussianNaiveBayes import GaussianNaiveBayes
 from sklearn.metrics import recall_score, precision_score
 from sklearn.naive_bayes import GaussianNB
+from sklearn.preprocessing import StandardScaler
 
 # Create dataset
 seed = 42
 X_cl, y_cl = make_classification(n_samples=1000,n_features=5)
+scaler = StandardScaler()
+X_cl = scaler.fit_transform(X_cl)
 df_cl = pd.DataFrame(X_cl, columns=['feat_'+str(i) for i in range(X_cl.shape[1])])
 y_cl = pd.Series(y_cl)
 X_train_cl, X_test_cl, y_train_cl, y_test_cl = train_test_split(df_cl, y_cl, test_size=0.2, random_state=seed)

@@ -49,7 +49,7 @@ X_cl, y_cl = make_classification(n_samples=1000,n_features=5)
 
 #Normalization
 scaler = StandardScaler()
-x = scaler.fit_transform(X_cl)
+X_cl = scaler.fit_transform(X_cl)
 X_train_cl, X_test_cl, y_train_cl, y_test_cl = train_test_split(X_cl, y_cl, test_size=0.2, random_state=seed)
 
 #Use class KNNClassifier
