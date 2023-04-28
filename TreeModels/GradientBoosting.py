@@ -15,7 +15,7 @@ class GradientBoostingRegression(DecisionTreeReg):
         depth limits the number of nodes in the tree. 
 
     min_samples_split : int or float, default=2
-        The minimum number of samples required to split an internal node:
+        The minimum number of samples required to split an internal node
 
         - If int, values must be in the range `[2, inf)`.
     """

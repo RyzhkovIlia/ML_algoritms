@@ -15,6 +15,15 @@ class Node():
         self.value = value
 
 class DecisionTreeClass():
+    """Classification implementing the Dicision Tree
+    max_depth : int, default=2
+        The maximum depth of the tree. If None, then nodes are expanded until
+        all leaves are pure or until all leaves contain less than
+        min_samples_split samples.
+
+    min_samples_split : int or float, default=2
+        The minimum number of samples required to split an internal node
+    """
     def __init__(self, min_samples_split:int=2, max_depth:int=2):
         
         # initialize the root of the tree 
@@ -158,15 +167,14 @@ class DecisionTreeClass():
             self.print_tree(tree.right, indent + indent)
         
 class DecisionTreeReg():
-    ''' A decision tree regressor.
+    ''' Regression implementing the Decision Tree
     max_depth : int, default=2
         The maximum depth of the tree. If None, then nodes are expanded until
         all leaves are pure or until all leaves contain less than
         min_samples_split samples.
 
     min_samples_split : int or float, default=2
-        The minimum number of samples required to split an internal node:
-
+        The minimum number of samples required to split an internal node
     '''
     
     def __init__(self, min_samples_split:int=2, max_depth:int=2):

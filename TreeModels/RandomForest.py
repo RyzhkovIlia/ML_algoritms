@@ -3,21 +3,39 @@ import pandas as pd
 import itertools as it
 from DecisionTree import DecisionTreeClass, DecisionTreeReg
 class PoissonRandomForestRegressor():
-    """_summary_
+    """Regression implementing the Random Forest
+    n_estimators : int, default=100
+        The number of trees in the forest.
+
+    max_depth : int, default=2
+        The maximum depth of the tree. If None, then nodes are expanded until
+        all leaves are pure or until all leaves contain less than
+        min_samples_split samples.
+
+    min_samples_split : int or float, default=2
+        The minimum number of samples required to split an internal node
+
+    sample_method : str, default=bootstrap
+        Sampling method. Must be only 'bootstrap' or 'poisson'
     """
     def __init__(self,
                 n_estimators:int=10,
                 max_depth:int=2, 
-                min_samples_split:int=2):
+                min_samples_split:int=2,
+                sample_method:str='bootstrap'):
         self.__n_estimators = n_estimators
         self.__max_depth = max_depth
         self.__min_samples_split = min_samples_split
+        self.__sample_method = sample_method
+
+    def __bootstrap(self):
+        """Function implementation of bootstrap sampling.
+        """
+        samples = np.random.choice(a = range(self.__x_samples), size = self.__x_samples)
+        self.__new_df_indexes = samples
 
     def __poiss(self):
         """Function implementation of Poisson bootstrap sampling.
-
-        Args:
-            data (pd.DataFrame): _description_
         """
         poisson = np.random.poisson(size = self.__x_samples)
         self.__new_df_indexes = []
@@ -28,7 +46,7 @@ class PoissonRandomForestRegressor():
     def fit(self, 
             X:np.array or pd.DataFrame, 
             y:np.array or pd.DataFrame):
-        """_summary_
+        """function to train the trees
 
         Args:
             X (np.arrayorpd.DataFrame): _description_
@@ -42,8 +60,9 @@ class PoissonRandomForestRegressor():
         self.__x_samples, self.n_features = X.shape
         self.feature_names_ = np.array(X.columns)
         self.__rf_models = []
+        method = self.__bootstrap if self.__sample_method == 'bootstrap' else self.__poiss
         for _ in range(self.__n_estimators):
-            self.__poiss()
+            method()
             new_X = X.loc[self.__new_df_indexes, :]
             new_y = y.loc[self.__new_df_indexes]
             my_tree = DecisionTreeReg(max_depth=self.__max_depth, min_samples_split=self.__min_samples_split)
@@ -55,7 +74,7 @@ class PoissonRandomForestRegressor():
     def predict(self, 
                 X:np.array or pd.DataFrame, 
                 smooth:int=None)->np.ndarray:
-        """_summary_
+        """function to predict new dataset
 
         Args:
             X (np.arrayorpd.DataFrame): _description_
@@ -84,15 +103,36 @@ class PoissonRandomForestRegressor():
 
 
 class PoissonRandomForestClassifier():
-    """_summary_
+    """Classification implementing the Random Forest
+    n_estimators : int, default=100
+        The number of trees in the forest.
+
+    max_depth : int, default=2
+        The maximum depth of the tree. If None, then nodes are expanded until
+        all leaves are pure or until all leaves contain less than
+        min_samples_split samples.
+
+    min_samples_split : int or float, default=2
+        The minimum number of samples required to split an internal node
+
+    sample_method : str, default=bootstrap
+        Sampling method. Must be only 'bootstrap' or 'poisson'
     """
     def __init__(self,
                 n_estimators:int=10,
                 max_depth:int=2, 
-                min_samples_split:int=2):
+                min_samples_split:int=2,
+                sample_method:str='bootstrap'):
         self.__n_estimators = n_estimators
         self.__max_depth = max_depth
         self.__min_samples_split = min_samples_split
+        self.__sample_method = sample_method
+
+    def __bootstrap(self):
+            """Function implementation of bootstrap sampling.
+            """
+            samples = np.random.choice(a = range(self.__x_samples), size = self.__x_samples)
+            self.__new_df_indexes = samples
 
     def __poiss(self):
         """Function implementation of Poisson bootstrap sampling.
@@ -111,7 +151,7 @@ class PoissonRandomForestClassifier():
     def fit(self, 
             X:np.array, 
             y:np.array):
-        """_summary_
+        """function to train the tree
 
         Args:
             X (np.arrayorpd.DataFrame): _description_
@@ -125,8 +165,9 @@ class PoissonRandomForestClassifier():
         self.__x_samples, self.n_features = X.shape
         self.feature_names_ = np.array(X.columns)
         self.__rf_models = []
+        method = self.__bootstrap if self.__sample_method == 'bootstrap' else self.__poiss
         for _ in range(self.__n_estimators):
-            self.__poiss()
+            method()
             new_X = X.loc[self.__new_df_indexes, :]
             new_y = y.loc[self.__new_df_indexes]
             my_tree = DecisionTreeClass(max_depth=self.__max_depth, min_samples_split=self.__min_samples_split)
@@ -136,7 +177,7 @@ class PoissonRandomForestClassifier():
     
     def predict(self, 
                 X:np.array)->np.ndarray:
-        """_summary_
+        """function to predict new dataset
 
         Args:
             X (np.arrayorpd.DataFrame): _description_
@@ -153,7 +194,7 @@ class PoissonRandomForestClassifier():
 
     def predict_proba(self, 
                         X:np.array or pd.DataFrame)->np.ndarray:
-        """_summary_
+        """function to predict proba new dataset
 
         Args:
             X (np.arrayorpd.DataFrame): _description_
