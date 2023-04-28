@@ -14,6 +14,7 @@ X_train_cl, X_test_cl, y_train_cl, y_test_cl = train_test_split(X_cl, y_cl, test
 classifier = DecisionTreeClass(min_samples_split=4, max_depth=5)
 classifier.fit(X_train_cl,y_train_cl)
 pred = classifier.predict(X_test_cl)
+classifier.print_tree()
 
 print("MY_CLASSIFICATION")
 print('precision', precision_score(y_test_cl, pred))
@@ -35,6 +36,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 dt_reg = DecisionTreeReg(max_depth=5, min_samples_split=4)
 dt_reg.fit(X_train,y_train)
 pred_reg = dt_reg.predict(X_test)
+dt_reg.print_tree()
 
 #Metrics
 print("MY_REGRESSION")
