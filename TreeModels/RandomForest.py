@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import itertools as it
 from DecisionTree import DecisionTreeClass, DecisionTreeReg
-class PoissonRandomForestRegressor():
+class MyRandomForestRegressor():
     """Regression implementing the Random Forest
     n_estimators : int, default=100
         The number of trees in the forest.
@@ -102,7 +102,7 @@ class PoissonRandomForestRegressor():
         return np.array(final_results)
 
 
-class PoissonRandomForestClassifier():
+class MyRandomForestClassifier():
     """Classification implementing the Random Forest
     n_estimators : int, default=100
         The number of trees in the forest.
