@@ -27,6 +27,53 @@ class MyRandomForestRegressor():
         self.__max_depth = max_depth
         self.__min_samples_split = min_samples_split
         self.__sample_method = sample_method
+        self.__method_list = ['bootstrap', 'poisson']
+        self.__check_params()
+
+    def __check_params(self):
+        """Check input parameters
+        """
+        if isinstance(self.__max_depth, int):
+            assert \
+            self.__max_depth > 0, \
+            'Argument max_depth must be only integer in the range [1, inf)'
+        else:
+            raise Exception('Argument max_depth must be only integer')
+        
+        if isinstance(self.__min_samples_split, int):
+            assert \
+            self.__min_samples_split > 1, \
+            'Argument min_samples_split must be only integer in the range [2, inf)'
+        else:
+            raise Exception('Argument min_samples_split must be only integer')
+        
+        if isinstance(self.__n_estimators, int):
+            assert \
+            self.__n_estimators > 0, \
+            'Argument n_estimators must be only integer in the range [1, inf)'
+        else:
+            raise Exception('Argument n_estimators must be only integer')
+        
+        if isinstance(self.__sample_method, str):
+            assert \
+            self.__sample_method in self.__method_list, \
+            'Argument sample_method must be only string and bootstrap or poisson'
+        else:
+            raise Exception('Argument sample_method must be only string and bootstrap or poisson')
+        
+    def _df_check(func):
+        """Decorator for check X argument
+        """
+        def inner(*args, **kwargs):
+            key = kwargs['X'] if 'X' in kwargs.keys() else args[1]
+            if (isinstance(key, pd.DataFrame)) | (isinstance(key, np.ndarray)):
+                    assert \
+                    len(key) > 0, \
+                    'Argument X must be only pandas DataFrame or numpy ndarray and not empty'
+            else:
+                raise Exception('Argument X must be only pandas DataFrame or numpy ndarray')
+            return func(*args, **kwargs)
+        return inner
 
     def __bootstrap(self):
         """Function implementation of bootstrap sampling.
@@ -43,20 +90,34 @@ class MyRandomForestRegressor():
             if cnt != 0:
                 self.__new_df_indexes += it.repeat(ind, cnt)
 
+    @_df_check
     def fit(self, 
-            X:np.array or pd.DataFrame, 
-            y:np.array or pd.DataFrame):
-        """function to train the trees
+            X:np.array or pd.DataFrame,
+            y:np.array or pd.Series):
+        """Fit the random forest regression model.
 
         Args:
-            X (np.arrayorpd.DataFrame): _description_
-            y (np.arrayorpd.DataFrame): _description_
+            X : {array-like, sparse matrix} of shape (n_samples, n_features)
+                The input samples.
+
+            y : array-like of shape (n_samples,)
+                Target values (strings or integers in classification, real numbers
+                in regression)
+                For classification, labels must correspond to classes.
 
         Returns:
-            _type_: _description_
+            self : object
+            Fitted estimator.
         """
+        if (isinstance(y, pd.Series)) | (isinstance(y, np.ndarray)):
+            assert \
+            len(y) == len(X), \
+            'Argument y must be only pandas Series or numpy ndarray and has some X len'
+        else:
+            raise Exception('Argument y must be only pandas Series or numpy ndarray and has some X len')
+        
         if ~isinstance(X, pd.DataFrame):   
-            X, y = pd.DataFrame(X), pd.Series(np.array(y))
+            X, y = pd.DataFrame(X), pd.Series(y)
         self.__x_samples, self.n_features = X.shape
         self.feature_names_ = np.array(X.columns)
         self.__rf_models = []
@@ -70,22 +131,27 @@ class MyRandomForestRegressor():
             self.__rf_models.append(my_tree)
         return self
 
-
+    @_df_check
     def predict(self, 
                 X:np.array or pd.DataFrame, 
-                smooth:int=None)->np.ndarray:
-        """function to predict new dataset
+                smooth:int or None=None)->np.ndarray:
+        """Predict regression target for X.
 
-        Args:
-            X (np.arrayorpd.DataFrame): _description_
-            smooth (int, optional): _description_. Defaults to None.
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            The input samples.
+        smooth : {integer or None}. Defaults to 100
 
-        Raises:
-            Exception: _description_
-
-        Returns:
-            np.ndarray: _description_
+        Returns
+        -------
+        y : ndarray of shape (n_samples,)
+            The predicted values.
         """
+        assert \
+        (isinstance(smooth, int)) | (smooth is None), \
+        'Argument smooth must be only integer or None'
+        
         if ~isinstance(X, pd.DataFrame):   
             X = pd.DataFrame(X)
         if smooth != None and (smooth>=self.__n_estimators//2 or smooth < 1):
@@ -127,6 +193,53 @@ class MyRandomForestClassifier():
         self.__max_depth = max_depth
         self.__min_samples_split = min_samples_split
         self.__sample_method = sample_method
+        self.__method_list = ['bootstrap', 'poisson']
+        self.__check_params()
+
+    def __check_params(self):
+        """Check input parameters
+        """
+        if isinstance(self.__max_depth, int):
+            assert \
+            self.__max_depth > 0, \
+            'Argument max_depth must be only integer in the range [1, inf)'
+        else:
+            raise Exception('Argument max_depth must be only integer')
+        
+        if isinstance(self.__min_samples_split, int):
+            assert \
+            self.__min_samples_split > 1, \
+            'Argument min_samples_split must be only integer in the range [2, inf)'
+        else:
+            raise Exception('Argument min_samples_split must be only integer')
+        
+        if isinstance(self.__n_estimators, int):
+            assert \
+            self.__n_estimators > 0, \
+            'Argument n_estimators must be only integer in the range [1, inf)'
+        else:
+            raise Exception('Argument n_estimators must be only integer')
+        
+        if isinstance(self.__sample_method, str):
+            assert \
+            self.__sample_method in self.__method_list, \
+            'Argument sample_method must be only string and bootstrap or poisson'
+        else:
+            raise Exception('Argument sample_method must be only string and bootstrap or poisson')
+
+    def _df_check(func):
+        """Decorator for check X argument
+        """
+        def inner(*args, **kwargs):
+            key = kwargs['X'] if 'X' in kwargs.keys() else args[1]
+            if (isinstance(key, pd.DataFrame)) | (isinstance(key, np.ndarray)):
+                    assert \
+                    len(key) > 0, \
+                    'Argument X must be only pandas DataFrame or numpy ndarray and not empty'
+            else:
+                raise Exception('Argument X must be only pandas DataFrame or numpy ndarray')
+            return func(*args, **kwargs)
+        return inner
 
     def __bootstrap(self):
             """Function implementation of bootstrap sampling.
@@ -136,10 +249,6 @@ class MyRandomForestClassifier():
 
     def __poiss(self):
         """Function implementation of Poisson bootstrap sampling.
-
-        Args:
-            data (pd.DataFrame): _description_
-
         """
 
         poisson = np.random.poisson(size = self.__x_samples)
@@ -149,16 +258,22 @@ class MyRandomForestClassifier():
                 self.__new_df_indexes += it.repeat(ind, cnt)
 
     def fit(self, 
-            X:np.array, 
-            y:np.array):
-        """function to train the tree
+            X:np.array or pd.DataFrame, 
+            y:np.array or pd.Series):
+        """Fit the random forest regression model.
 
         Args:
-            X (np.arrayorpd.DataFrame): _description_
-            y (np.arrayorpd.DataFrame): _description_
+            X : {array-like, sparse matrix} of shape (n_samples, n_features)
+                The input samples.
+
+            y : array-like of shape (n_samples,)
+                Target values (strings or integers in classification, real numbers
+                in regression)
+                For classification, labels must correspond to classes.
 
         Returns:
-            _type_: _description_
+            self : object
+            Fitted estimator.
         """
         if ~isinstance(X, pd.DataFrame):   
             X, y = pd.DataFrame(X), pd.Series(np.array(y))
@@ -176,14 +291,18 @@ class MyRandomForestClassifier():
         return self
     
     def predict(self, 
-                X:np.array)->np.ndarray:
-        """function to predict new dataset
+                X:np.array or pd.DataFrame)->np.ndarray:
+        """Predict classification target for X.
 
-        Args:
-            X (np.arrayorpd.DataFrame): _description_
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            The input samples.
 
-        Returns:
-            np.ndarray: _description_
+        Returns
+        -------
+        y : ndarray of shape (n_samples,)
+            The predicted values.
         """
         if ~isinstance(X, pd.DataFrame):   
             X = pd.DataFrame(X)
@@ -194,13 +313,17 @@ class MyRandomForestClassifier():
 
     def predict_proba(self, 
                         X:np.array or pd.DataFrame)->np.ndarray:
-        """function to predict proba new dataset
+        """Predict probalistic classification target for X.
 
-        Args:
-            X (np.arrayorpd.DataFrame): _description_
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            The input samples.
 
-        Returns:
-            np.ndarray: _description_
+        Returns
+        -------
+        y : ndarray of shape (n_samples,)
+            The predicted values.
         """
         if ~isinstance(X, pd.DataFrame):   
             X = pd.DataFrame(X)

@@ -1,7 +1,14 @@
 import numpy as np
+import pandas as pd
 
 class Node():
-    def __init__(self, feature_index=None, threshold=None, left=None, right=None, coeff=None, value=None):
+    def __init__(self, 
+                feature_index:int or None=None, 
+                threshold:int or float or None=None, 
+                left:np.array or None=None, 
+                right:np.array or None=None, 
+                coeff:float or None=None, 
+                value:float or None=None):
         ''' constructor ''' 
         
         # for decision node
@@ -24,7 +31,9 @@ class DecisionTreeClass():
     min_samples_split : int or float, default=2
         The minimum number of samples required to split an internal node
     """
-    def __init__(self, min_samples_split:int=2, max_depth:int=2):
+    def __init__(self, 
+                min_samples_split:int=2, 
+                max_depth:int=2):
         
         # initialize the root of the tree 
         self.__root = None
@@ -33,17 +42,21 @@ class DecisionTreeClass():
         self.__min_samples_split = min_samples_split
         self.__max_depth = max_depth
 
-    def __gini_index(self, y):
+    def __gini_index(self, 
+                    Y:np.array):
         ''' function to compute gini index '''
         
-        class_labels = np.unique(y)
+        class_labels = np.unique(Y)
         gini = 0
         for cls in class_labels:
-            p_cls = len(y[y == cls]) / len(y)
+            p_cls = len(Y[Y == cls]) / len(Y)
             gini += p_cls**2
         return 1 - gini
 
-    def __information_gain(self, parent, l_child, r_child):
+    def __information_gain(self, 
+                            parent:np.array, 
+                            l_child:np.array, 
+                            r_child:np.array):
         ''' function to compute information gain '''
         
         weight_l = len(l_child) / len(parent)
@@ -51,14 +64,19 @@ class DecisionTreeClass():
 
         return self.__gini_index(parent) - (weight_l*self.__gini_index(l_child) + weight_r*self.__gini_index(r_child))
 
-    def __split(self, dataset, feature_index, threshold):
+    def __split(self, 
+                dataset:np.array, 
+                feature_index:int, 
+                threshold:int or float):
         ''' function to split the data '''
         
         dataset_left = np.array([row for row in dataset if row[feature_index]<=threshold])
         dataset_right = np.array([row for row in dataset if row[feature_index]>threshold])
         return dataset_left, dataset_right
 
-    def __get_best_split(self, dataset, num_features):
+    def __get_best_split(self, 
+                        dataset:np.array, 
+                        num_features:int):
         ''' function to find the best split '''
         
         # dictionary to store the best split
@@ -77,7 +95,7 @@ class DecisionTreeClass():
                 if len(dataset_left)>0 and len(dataset_right)>0:
                     y, left_y, right_y = dataset[:, -1], dataset_left[:, -1], dataset_right[:, -1]
                     # compute information gain
-                    curr_coeff = self.__information_gain(y, left_y, right_y)
+                    curr_coeff = self.__information_gain(parent=y, l_child=left_y, r_child=right_y)
                     # update the best split if needed
                     if curr_coeff>max_coeff:
                         best_split["feature_index"] = feature_index
@@ -90,13 +108,16 @@ class DecisionTreeClass():
         # return best split
         return best_split
     
-    def __calculate_leaf_value(self, Y):
+    def __calculate_leaf_value(self, 
+                                Y:np.array):
         ''' function to compute leaf node '''
         
         Y = list(Y)
         return max(Y, key=Y.count)
 
-    def __build_tree(self, dataset, curr_depth=0):
+    def __build_tree(self, 
+                    dataset:np.array, 
+                    curr_depth:int=0):
         ''' recursive function to build the tree ''' 
         
         X, Y = dataset[:,:-1], dataset[:,-1]
@@ -124,18 +145,22 @@ class DecisionTreeClass():
         # return leaf node
         return Node(value=leaf_value)
     
-    def __make_prediction(self, x, tree):
+    def __make_prediction(self, 
+                        X:np.array, 
+                        tree:Node):
         ''' function to predict a single data point '''
         
         if tree.value!=None: 
             return tree.value
-        feature_val = x[tree.feature_index]
+        feature_val = X[tree.feature_index]
         if feature_val<=tree.threshold:
-            return self.__make_prediction(x, tree.left)
+            return self.__make_prediction(X, tree.left)
         else:
-            return self.__make_prediction(x, tree.right)
+            return self.__make_prediction(X, tree.right)
         
-    def fit(self, X, y):
+    def fit(self, 
+            X:np.array or pd.DataFrame,
+            y:np.array or pd.Series):
         ''' function to train the tree '''
         if isinstance(X, np.ndarray)==False:
             X, y = np.array(X), np.array(y)
@@ -143,14 +168,17 @@ class DecisionTreeClass():
         dataset = np.concatenate((X, y), axis=1)
         self.__root = self.__build_tree(dataset)
     
-    def predict(self, X):
+    def predict(self, 
+                X:np.array or pd.DataFrame):
         ''' function to predict new dataset '''
         if isinstance(X, np.ndarray)==False:
             X = np.array(X)
         preditions = [self.__make_prediction(x, self.__root) for x in X]
         return preditions
 
-    def print_tree(self, tree=None, indent=" "):
+    def print_tree(self, 
+                    tree:Node or None=None, 
+                    indent:str=" "):
         ''' function to print the tree '''
         
         if not tree:
@@ -177,7 +205,9 @@ class DecisionTreeReg():
         The minimum number of samples required to split an internal node
     '''
     
-    def __init__(self, min_samples_split:int=2, max_depth:int=2):
+    def __init__(self, 
+                min_samples_split:int=2, 
+                max_depth:int=2):
         
         # initialize the root of the tree 
         self.__root = None
@@ -186,7 +216,10 @@ class DecisionTreeReg():
         self.__min_samples_split = min_samples_split
         self.__max_depth = max_depth
 
-    def __variance_reduction(self, parent, l_child, r_child):
+    def __variance_reduction(self, 
+                            parent:np.array, 
+                            l_child:np.array, 
+                            r_child:np.array):
         ''' function to compute variance reduction '''
         
         weight_l = len(l_child) / len(parent)
@@ -194,7 +227,10 @@ class DecisionTreeReg():
         reduction = np.var(parent) - (weight_l * np.var(l_child) + weight_r * np.var(r_child))
         return reduction
 
-    def __split(self, dataset, feature_index, threshold):
+    def __split(self, 
+                dataset:np.array, 
+                feature_index:int, 
+                threshold:int or float):
         ''' function to split the data '''
         
         dataset_left = np.array([row for row in dataset if row[feature_index]<=threshold])
@@ -202,7 +238,9 @@ class DecisionTreeReg():
         return dataset_left, dataset_right
     
 
-    def __get_best_split(self, dataset, num_features):
+    def __get_best_split(self, 
+                        dataset:np.array, 
+                        num_features:int):
         ''' function to find the best split '''
         
         # dictionary to store the best split
@@ -221,7 +259,7 @@ class DecisionTreeReg():
                 if len(dataset_left)>0 and len(dataset_right)>0:
                     y, left_y, right_y = dataset[:, -1], dataset_left[:, -1], dataset_right[:, -1]
                     # compute information gain
-                    curr_coeff = self.__variance_reduction(y, left_y, right_y)
+                    curr_coeff = self.__variance_reduction(parent=y, l_child=left_y, r_child=right_y)
                     # update the best split if needed
                     if curr_coeff>max_coeff:
                         best_split["feature_index"] = feature_index
@@ -234,13 +272,16 @@ class DecisionTreeReg():
         # return best split
         return best_split
     
-    def __calculate_leaf_value(self, Y):
+    def __calculate_leaf_value(self, 
+                                Y:np.array):
         ''' function to compute leaf node '''
         
         val = np.mean(Y)
         return val
 
-    def __build_tree(self, dataset, curr_depth=0):
+    def __build_tree(self, 
+                        dataset:np.array, 
+                        curr_depth:int=0):
         ''' recursive function to build the tree ''' 
         
         X, Y = dataset[:,:-1], dataset[:,-1]
@@ -268,18 +309,22 @@ class DecisionTreeReg():
         # return leaf node
         return Node(value=leaf_value)
 
-    def __make_prediction(self, x, tree):
+    def __make_prediction(self, 
+                            X:np.array, 
+                            tree:Node):
         ''' function to predict a single data point '''
         
         if tree.value!=None: 
             return tree.value
-        feature_val = x[tree.feature_index]
+        feature_val = X[tree.feature_index]
         if feature_val<=tree.threshold:
-            return self.__make_prediction(x, tree.left)
+            return self.__make_prediction(X, tree.left)
         else:
-            return self.__make_prediction(x, tree.right)
+            return self.__make_prediction(X, tree.right)
         
-    def fit(self, X, y):
+    def fit(self, 
+            X:np.array or pd.DataFrame,
+            y:np.array or pd.Series):
         ''' function to train the tree '''
         if isinstance(X, np.ndarray)==False:
             X, y = np.array(X), np.array(y)
@@ -287,14 +332,17 @@ class DecisionTreeReg():
         dataset = np.concatenate((X, y), axis=1)
         self.__root = self.__build_tree(dataset)
     
-    def predict(self, X)->np.array:
+    def predict(self, 
+                X:np.array or pd.DataFrame)->np.array:
         ''' function to predict new dataset '''
         if isinstance(X, np.ndarray)==False:
             X = np.array(X)
         preditions = [self.__make_prediction(x, self.__root) for x in X]
         return np.array(preditions)
 
-    def print_tree(self, tree=None, indent=" "):
+    def print_tree(self, 
+                    tree:Node or None=None, 
+                    indent:str=" "):
         ''' function to print the tree '''
         
         if not tree:
