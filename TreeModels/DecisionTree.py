@@ -41,7 +41,47 @@ class DecisionTreeClass():
         # stopping conditions
         self.__min_samples_split = min_samples_split
         self.__max_depth = max_depth
+        self.__check_params()
 
+    def __check_params(self):
+        """Check input parameters
+        """
+        if isinstance(self.__max_depth, int):
+            assert \
+            self.__max_depth > 0, \
+            'Argument max_depth must be only integer in the range [1, inf)'
+        else:
+            raise Exception('Argument max_depth must be only integer')
+        
+        if isinstance(self.__min_samples_split, int):
+            assert \
+            self.__min_samples_split > 1, \
+            'Argument min_samples_split must be only integer in the range [2, inf)'
+        else:
+            raise Exception('Argument min_samples_split must be only integer')
+
+    def _np_check(func):
+        """Decorator for check X argument
+        """
+        def inner(*args, **kwargs):
+            for num, arg in enumerate(args):
+                if type(arg) == np.ndarray:
+                    assert \
+                    len(arg) > 0, \
+                    f'Argument {num} in function {func} must not be empty.'
+            try:
+                for key, kwarg in kwargs.items():
+                    if type(kwarg) == np.ndarray:
+                        assert \
+                        len(kwarg) > 0, \
+                        f'Argument {key} in function {func} must not be empty.'
+            except:
+                pass
+
+            return func(*args, **kwargs)
+        return inner
+
+    @_np_check
     def __gini_index(self, 
                     Y:np.array):
         ''' function to compute gini index '''
@@ -53,6 +93,7 @@ class DecisionTreeClass():
             gini += p_cls**2
         return 1 - gini
 
+    @_np_check
     def __information_gain(self, 
                             parent:np.array, 
                             l_child:np.array, 
@@ -64,6 +105,7 @@ class DecisionTreeClass():
 
         return self.__gini_index(parent) - (weight_l*self.__gini_index(l_child) + weight_r*self.__gini_index(r_child))
 
+    @_np_check
     def __split(self, 
                 dataset:np.array, 
                 feature_index:int, 
@@ -74,6 +116,7 @@ class DecisionTreeClass():
         dataset_right = np.array([row for row in dataset if row[feature_index]>threshold])
         return dataset_left, dataset_right
 
+    @_np_check
     def __get_best_split(self, 
                         dataset:np.array, 
                         num_features:int):
@@ -108,6 +151,7 @@ class DecisionTreeClass():
         # return best split
         return best_split
     
+    @_np_check
     def __calculate_leaf_value(self, 
                                 Y:np.array):
         ''' function to compute leaf node '''
@@ -115,6 +159,7 @@ class DecisionTreeClass():
         Y = list(Y)
         return max(Y, key=Y.count)
 
+    @_np_check
     def __build_tree(self, 
                     dataset:np.array, 
                     curr_depth:int=0):
@@ -145,6 +190,7 @@ class DecisionTreeClass():
         # return leaf node
         return Node(value=leaf_value)
     
+    @_np_check
     def __make_prediction(self, 
                         X:np.array, 
                         tree:Node):
@@ -158,8 +204,9 @@ class DecisionTreeClass():
         else:
             return self.__make_prediction(X, tree.right)
         
+    @_np_check
     def fit(self, 
-            X:np.array or pd.DataFrame,
+            X:np.array or pd.DataFrame or pd.Series,
             y:np.array or pd.Series):
         ''' function to train the tree '''
         if isinstance(X, np.ndarray)==False:
@@ -168,8 +215,9 @@ class DecisionTreeClass():
         dataset = np.concatenate((X, y), axis=1)
         self.__root = self.__build_tree(dataset)
     
+    @_np_check
     def predict(self, 
-                X:np.array or pd.DataFrame):
+                X:np.array or pd.DataFrame or pd.Series):
         ''' function to predict new dataset '''
         if isinstance(X, np.ndarray)==False:
             X = np.array(X)
@@ -181,7 +229,7 @@ class DecisionTreeClass():
                     indent:str=" "):
         ''' function to print the tree '''
         
-        if not tree:
+        if tree is None:
             tree = self.__root
 
         if tree.value is not None:
@@ -215,7 +263,47 @@ class DecisionTreeReg():
         # stopping conditions
         self.__min_samples_split = min_samples_split
         self.__max_depth = max_depth
+        self.__check_params()
 
+    def __check_params(self):
+        """Check input parameters
+        """
+        if isinstance(self.__max_depth, int):
+            assert \
+            self.__max_depth > 0, \
+            'Argument max_depth must be only integer in the range [1, inf)'
+        else:
+            raise Exception('Argument max_depth must be only integer')
+        
+        if isinstance(self.__min_samples_split, int):
+            assert \
+            self.__min_samples_split > 1, \
+            'Argument min_samples_split must be only integer in the range [2, inf)'
+        else:
+            raise Exception('Argument min_samples_split must be only integer')
+
+    def _np_check(func):
+        """Decorator for check X argument
+        """
+        def inner(*args, **kwargs):
+            for num, arg in enumerate(args):
+                if type(arg) == np.ndarray:
+                    assert \
+                    len(arg) > 0, \
+                    f'Argument {num} in function {func} must not be empty.'
+            try:
+                for key, kwarg in kwargs.items():
+                    if type(kwarg) == np.ndarray:
+                        assert \
+                        len(kwarg) > 0, \
+                        f'Argument {key} in function {func} must not be empty.'
+            except:
+                pass
+            
+            return func(*args, **kwargs)
+        return inner
+    
+    @_np_check
     def __variance_reduction(self, 
                             parent:np.array, 
                             l_child:np.array, 
@@ -227,6 +315,7 @@ class DecisionTreeReg():
         reduction = np.var(parent) - (weight_l * np.var(l_child) + weight_r * np.var(r_child))
         return reduction
 
+    @_np_check
     def __split(self, 
                 dataset:np.array, 
                 feature_index:int, 
@@ -237,7 +326,7 @@ class DecisionTreeReg():
         dataset_right = np.array([row for row in dataset if row[feature_index]>threshold])
         return dataset_left, dataset_right
     
-
+    @_np_check
     def __get_best_split(self, 
                         dataset:np.array, 
                         num_features:int):
@@ -272,6 +361,7 @@ class DecisionTreeReg():
         # return best split
         return best_split
     
+    @_np_check
     def __calculate_leaf_value(self, 
                                 Y:np.array):
         ''' function to compute leaf node '''
@@ -279,9 +369,10 @@ class DecisionTreeReg():
         val = np.mean(Y)
         return val
 
+    @_np_check
     def __build_tree(self, 
-                        dataset:np.array, 
-                        curr_depth:int=0):
+                    dataset:np.array, 
+                    curr_depth:int=0):
         ''' recursive function to build the tree ''' 
         
         X, Y = dataset[:,:-1], dataset[:,-1]
@@ -309,6 +400,7 @@ class DecisionTreeReg():
         # return leaf node
         return Node(value=leaf_value)
 
+    @_np_check
     def __make_prediction(self, 
                             X:np.array, 
                             tree:Node):
@@ -322,8 +414,9 @@ class DecisionTreeReg():
         else:
             return self.__make_prediction(X, tree.right)
         
+    @_np_check
     def fit(self, 
-            X:np.array or pd.DataFrame,
+            X:np.array or pd.DataFrame or pd.Series,
             y:np.array or pd.Series):
         ''' function to train the tree '''
         if isinstance(X, np.ndarray)==False:
@@ -332,8 +425,9 @@ class DecisionTreeReg():
         dataset = np.concatenate((X, y), axis=1)
         self.__root = self.__build_tree(dataset)
     
+    @_np_check
     def predict(self, 
-                X:np.array or pd.DataFrame)->np.array:
+                X:np.array or pd.DataFrame or pd.Series)->np.array:
         ''' function to predict new dataset '''
         if isinstance(X, np.ndarray)==False:
             X = np.array(X)
