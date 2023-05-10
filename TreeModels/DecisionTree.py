@@ -1,24 +1,5 @@
 import numpy as np
 import pandas as pd
-class _Node():
-    def __init__(self, 
-                feature_index:int or None=None, 
-                threshold:int or float or None=None, 
-                left:np.array or None=None, 
-                right:np.array or None=None, 
-                coeff:float or None=None, 
-                value:float or None=None):
-        ''' constructor ''' 
-        
-        # for decision node
-        self.feature_index = feature_index
-        self.threshold = threshold
-        self.left = left
-        self.right = right
-        self.coeff = coeff
-        
-        # for leaf node
-        self.value = value
 
 def _np_check(func):
         """Decorator for check X argument
@@ -40,6 +21,27 @@ def _np_check(func):
 
             return func(*args, **kwargs)
         return inner
+
+class _Node():
+    def __init__(self, 
+                feature_index:int or None=None, 
+                threshold:int or float or None=None, 
+                left:np.array or None=None, 
+                right:np.array or None=None, 
+                coeff:float or None=None, 
+                value:float or None=None):
+        ''' constructor ''' 
+        
+        # for decision node
+        self.feature_index = feature_index
+        self.threshold = threshold
+        self.left = left
+        self.right = right
+        self.coeff = coeff
+        
+        # for leaf node
+        self.value = value
+
 class DecisionInfo():
     def __init__(self):
         pass
