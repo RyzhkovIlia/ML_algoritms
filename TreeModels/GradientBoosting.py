@@ -127,7 +127,8 @@ class GradientBoostingRegression(DecisionTreeReg):
         y_pred = np.full((y.shape[0], ), np.mean(y))
         for _ in range(max_trees):
             residual = y - y_pred
-            tree = DecisionTreeReg(max_depth=self.__max_depth, min_samples_split=self.__min_samples_split)
+            tree = DecisionTreeReg(max_depth=self.__max_depth, 
+                                    min_samples_split=self.__min_samples_split)
             tree.fit(X, residual)
             predict_train = tree.predict(X)
             y_pred += self.__learning_rate * predict_train

@@ -167,7 +167,6 @@ class MyRandomForestRegressor():
         final_results = np.array([result/(self.__n_estimators-(self.__smooth *2)) for result in results])
         return np.array(final_results)
 
-
 class MyRandomForestClassifier():
     """Classification implementing the Random Forest
     n_estimators : int, default=100

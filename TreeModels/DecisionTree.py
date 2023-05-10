@@ -169,7 +169,7 @@ class DecisionBuild(DecisionInfo):
         if num_samples>=self.__min_samples_split and curr_depth<=self.__max_depth:
             # find the best split
             best_split = self.__get_best_split(dataset=dataset, 
-                                                curr_depth=num_features)
+                                                num_features=num_features)
             # check if information gain is positive
             try:
                 if best_split["coeff"]>0:
@@ -234,12 +234,12 @@ class DecisionBuild(DecisionInfo):
         
     def predict(self, 
                 X:np.array or pd.DataFrame or pd.Series,
-                tree:_Node):
+                tree:_Node)->np.ndarray:
         ''' function to predict new dataset '''
         if isinstance(X, np.ndarray)==False:
             X = np.array(X)
         preditions = [self.__make_prediction(X=x, tree=tree) for x in X]
-        return preditions
+        return np.array(preditions)
 
 class DecisionTreeClass(DecisionBuild):
     """Classification implementing the Dicision Tree
