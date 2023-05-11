@@ -30,8 +30,8 @@ class _Node():
                 right:np.array or None=None, 
                 coeff:float or None=None, 
                 value:float or None=None):
-        ''' constructor ''' 
-        
+        '''Constructor
+        ''' 
         # for decision node
         self.feature_index = feature_index
         self.threshold = threshold
@@ -42,15 +42,15 @@ class _Node():
         # for leaf node
         self.value = value
 
-class DecisionInfo():
+class _DecisionInfo():
     def __init__(self):
         pass
 
     @_np_check
     def __gini_index(self, 
                     Y:np.array):
-        ''' function to compute gini index '''
-        
+        '''Function to compute gini index
+        '''
         class_labels = np.unique(Y)
         gini = 0
         for cls in class_labels:
@@ -59,45 +59,45 @@ class DecisionInfo():
         return 1 - gini
 
     @_np_check
-    def information_gain(self, 
+    def _information_gain(self, 
                             parent:np.array, 
                             l_child:np.array, 
                             r_child:np.array):
-        ''' function to compute information gain '''
-        
+        '''Function to compute information gain
+        '''
         weight_l = len(l_child) / len(parent)
         weight_r = len(r_child) / len(parent)
 
         return self.__gini_index(Y=parent) - (weight_l*self.__gini_index(Y=l_child) + weight_r*self.__gini_index(Y=r_child))
     
     @_np_check
-    def variance_reduction(self, 
+    def _variance_reduction(self, 
                             parent:np.array, 
                             l_child:np.array, 
                             r_child:np.array):
-        ''' function to compute variance reduction '''
-        
+        '''Function to compute variance reduction
+        '''
         weight_l = len(l_child) / len(parent)
         weight_r = len(r_child) / len(parent)
         reduction = np.var(parent) - (weight_l * np.var(l_child) + weight_r * np.var(r_child))
         return reduction
     
     @_np_check
-    def calculate_leaf_value_class(self, 
+    def _calculate_leaf_value_class(self, 
                                 Y:np.array):
-        ''' function to compute leaf node '''
-        
+        '''Function to compute leaf node
+        '''
         Y = list(Y)
         return max(Y, key=Y.count)
     
     @_np_check
-    def calculate_leaf_value_reg(self, 
+    def _calculate_leaf_value_reg(self, 
                                 Y:np.array):
-        ''' function to compute leaf node '''
-        
+        '''Function to compute leaf node
+        '''
         return np.mean(Y)
 
-class DecisionBuild(DecisionInfo):
+class _DecisionBuild(_DecisionInfo):
     def __init__(self,
                 task:str,
                 min_samples_split:int,
@@ -105,16 +105,16 @@ class DecisionBuild(DecisionInfo):
         super().__init__()
         self.__min_samples_split = min_samples_split
         self.__max_depth = max_depth
-        self.__use_func = super().information_gain if task == 'class' else super().variance_reduction
-        self.__use_leaf = super().calculate_leaf_value_class if task == 'class' else super().calculate_leaf_value_reg
+        self.__use_func = super()._information_gain if task == 'class' else super()._variance_reduction
+        self.__use_leaf = super()._calculate_leaf_value_class if task == 'class' else super()._calculate_leaf_value_reg
 
     @_np_check
     def __split(self, 
                 dataset:np.array, 
                 feature_index:int, 
                 threshold:int or float):
-        ''' function to split the data '''
-        
+        '''Function to split the data
+        '''
         dataset_left = np.array([row for row in dataset if row[feature_index]<threshold])
         dataset_right = np.array([row for row in dataset if row[feature_index]>=threshold])
         return dataset_left, dataset_right
@@ -123,8 +123,8 @@ class DecisionBuild(DecisionInfo):
     def __get_best_split(self, 
                         dataset:np.array, 
                         num_features:int):
-        ''' function to find the best split '''
-        
+        '''Function to find the best split
+        '''
         # dictionary to store the best split
         best_split = {}
         max_coeff = -float("inf")
@@ -160,8 +160,8 @@ class DecisionBuild(DecisionInfo):
     def __build_tree(self, 
                     dataset:np.array, 
                     curr_depth:int=0):
-        ''' recursive function to build the tree ''' 
-        
+        '''Recursive function to build the tree
+        ''' 
         X, Y = dataset[:,:-1], dataset[:,-1]
         num_samples, num_features = np.shape(X)
         
@@ -190,11 +190,15 @@ class DecisionBuild(DecisionInfo):
         # return leaf node
         return _Node(value=leaf_value)
     
-    def print_tree(self, 
+    def _print_tree(self, 
                     tree:_Node or None=None, 
                     indent:str=" "):
-        ''' function to print the tree '''
+        """Function to print the tree
         
+        Args:
+            tree (_Node): Tree Nodes
+            indent (strinf): Name
+        """        
         if tree is None:
             tree = self.__root
 
@@ -208,10 +212,18 @@ class DecisionBuild(DecisionInfo):
             print("%sright:" % (indent), end="")
             self.print_tree(tree=tree.right, indent=indent + indent)
 
-    def fit(self, 
+    def _fit(self, 
             X:np.array or pd.DataFrame or pd.Series,
             y:np.array or pd.Series):
-        ''' function to train the tree '''
+        """Function to train the tree
+
+        Args:
+            X (np.array or pd.DataFrame or pd.Series): Train data
+            y (np.array or pd.Series): Target array
+
+        Returns:
+            _type_: Self fit
+        """
         if isinstance(X, np.ndarray)==False:
             X, y = np.array(X), np.array(y)
         y = y.reshape(-1,1)
@@ -223,7 +235,8 @@ class DecisionBuild(DecisionInfo):
     def __make_prediction(self, 
                             X:np.array, 
                             tree:_Node):
-        ''' function to predict a single data point '''
+        '''Function to predict a single data point
+        '''
         if tree.value!=None: 
             return tree.value
         feature_val = X[tree.feature_index]
@@ -232,16 +245,41 @@ class DecisionBuild(DecisionInfo):
         else:
             return self.__make_prediction(X=X, tree=tree.right)
         
-    def predict(self, 
+    def _predict(self, 
                 X:np.array or pd.DataFrame or pd.Series,
                 tree:_Node)->np.ndarray:
-        ''' function to predict new dataset '''
+        """Function to predict new dataset
+
+        Args:
+            X (np.array or pd.DataFrame or pd.Series): Predict data
+            tree (_Node): Tree Nodes
+
+        Returns:
+            np.ndarray: Predict result (np.ndarray)
+        """
         if isinstance(X, np.ndarray)==False:
             X = np.array(X)
         preditions = [self.__make_prediction(X=x, tree=tree) for x in X]
         return np.array(preditions)
+    
+    def _check_params(self):
+        """Check input parameters
+        """
+        if isinstance(self.__max_depth, int):
+            assert \
+            self.__max_depth > 0, \
+            'Argument max_depth must be only integer in the range [1, inf)'
+        else:
+            raise Exception('Argument max_depth must be only integer')
+        
+        if isinstance(self.__min_samples_split, int):
+            assert \
+            self.__min_samples_split > 1, \
+            'Argument min_samples_split must be only integer in the range [2, inf)'
+        else:
+            raise Exception('Argument min_samples_split must be only integer')
 
-class DecisionTreeClass(DecisionBuild):
+class DecisionTreeClass(_DecisionBuild):
     """Classification implementing the Dicision Tree
     max_depth : int, default=2
         The maximum depth of the tree. If None, then nodes are expanded until
@@ -260,56 +298,54 @@ class DecisionTreeClass(DecisionBuild):
         # stopping conditions
         self.__min_samples_split = min_samples_split
         self.__max_depth = max_depth
-        self.__check_params()
         super().__init__(task='class', 
                         min_samples_split=min_samples_split,
                         max_depth=max_depth)
+        super()._check_params()
 
-    def __check_params(self):
-        """Check input parameters
-        """
-        if isinstance(self.__max_depth, int):
-            assert \
-            self.__max_depth > 0, \
-            'Argument max_depth must be only integer in the range [1, inf)'
-        else:
-            raise Exception('Argument max_depth must be only integer')
-        
-        if isinstance(self.__min_samples_split, int):
-            assert \
-            self.__min_samples_split > 1, \
-            'Argument min_samples_split must be only integer in the range [2, inf)'
-        else:
-            raise Exception('Argument min_samples_split must be only integer')
-    
     @_np_check
     def fit(self, 
             X: pd.Series or pd.DataFrame or np.array, 
             y: pd.Series or np.array):
-        self.__root = super().fit(X, y)
+        """Function to train the tree
+
+        Args:
+            X (np.arrayorpd.DataFrameorpd.Series): Train data
+            y (np.arrayorpd.Series): Target array
+
+        Returns:
+            _type_: Self fit
+        """
+        self.__root = super()._fit(X, y)
+        return self
 
     @_np_check
     def predict(self, 
                 X: np.array or pd.DataFrame or pd.Series):
-        return super().predict(X=X, tree=self.__root)
+        """Function to predict new dataset
+
+        Args:
+            X (np.array or pd.DataFrame or pd.Series): Predict data
+
+        Returns:
+            np.ndarray: Predict result (np.ndarray)
+        """
+        return super()._predict(X=X, tree=self.__root)
 
     def print_tree(self, 
                     tree: _Node = None, 
                     indent: str = " "):
-        """_summary_
-
+        """Function to print the tree
+        
         Args:
-            tree (_Node, optional): _description_. Defaults to None.
-            indent (str, optional): _description_. Defaults to " ".
-
-        Returns:
-            _type_: _description_
-        """
-        return super().print_tree(tree=tree, 
+            tree (_Node): Tree Nodes
+            indent (strinf): Name
+        """  
+        return super()._print_tree(tree=tree, 
                                     indent=indent)
     
-class DecisionTreeReg(DecisionBuild):
-    ''' Regression implementing the Decision Tree
+class DecisionTreeReg(_DecisionBuild):
+    '''Regression implementing the Decision Tree
     max_depth : int, default=2
         The maximum depth of the tree. If None, then nodes are expanded until
         all leaves are pure or until all leaves contain less than
@@ -328,50 +364,48 @@ class DecisionTreeReg(DecisionBuild):
         # stopping conditions
         self.__min_samples_split = min_samples_split
         self.__max_depth = max_depth
-        self.__check_params()
         super().__init__(task='reg', 
                         min_samples_split=min_samples_split,
                         max_depth=max_depth)
-
-    def __check_params(self):
-        """Check input parameters
-        """
-        if isinstance(self.__max_depth, int):
-            assert \
-            self.__max_depth > 0, \
-            'Argument max_depth must be only integer in the range [1, inf)'
-        else:
-            raise Exception('Argument max_depth must be only integer')
-        
-        if isinstance(self.__min_samples_split, int):
-            assert \
-            self.__min_samples_split > 1, \
-            'Argument min_samples_split must be only integer in the range [2, inf)'
-        else:
-            raise Exception('Argument min_samples_split must be only integer')
+        super()._check_params()
         
     @_np_check
     def fit(self, 
         X: pd.Series or pd.DataFrame or np.array, 
         y: pd.Series or np.array):
-        self.__root = super().fit(X, y)
+        """Function to train the tree
+
+        Args:
+            X (np.arrayorpd.DataFrameorpd.Series): Train data
+            y (np.arrayorpd.Series): Target array
+
+        Returns:
+            _type_: Self fit
+        """
+        self.__root = super()._fit(X, y)
+        return self
     
     @_np_check
     def predict(self, 
                 X: np.array or pd.DataFrame or pd.Series):
-        return super().predict(X=X, tree=self.__root)
+        """Function to predict new dataset
+
+        Args:
+            X (np.array or pd.DataFrame or pd.Series): Predict data
+
+        Returns:
+            np.ndarray: Predict result (np.ndarray)
+        """
+        return super()._predict(X=X, tree=self.__root)
 
     def print_tree(self, 
                     tree: _Node = None, 
                     indent: str = " "):
-        """_summary_
-
+        """Function to print the tree
+        
         Args:
-            tree (_Node, optional): _description_. Defaults to None.
-            indent (str, optional): _description_. Defaults to " ".
-
-        Returns:
-            _type_: _description_
-        """
-        return super().print_tree(tree=tree, 
+            tree (_Node): Tree Nodes
+            indent (strinf): Name
+        """  
+        return super()._print_tree(tree=tree, 
                                     indent=indent)

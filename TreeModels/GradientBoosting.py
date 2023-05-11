@@ -3,6 +3,20 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error, mean_squared_error
 
+def _df_check(func):
+    """Decorator for check X argument
+    """
+    def inner(*args, **kwargs):
+        key = kwargs['X'] if 'X' in kwargs.keys() else args[1]
+        if (isinstance(key, pd.DataFrame)) | (isinstance(key, np.ndarray)):
+                assert \
+                len(key) > 0, \
+                'Argument X must be only pandas DataFrame or numpy ndarray and not empty'
+        else:
+            raise Exception('Argument X must be only pandas DataFrame or numpy ndarray')
+        return func(*args, **kwargs)
+    return inner
+
 class GradientBoostingRegression(DecisionTreeReg):
     """Regression implementing the Gradient Bossting
     Parameters
@@ -76,20 +90,6 @@ class GradientBoostingRegression(DecisionTreeReg):
                 'Argument verbose must be only integer or None in the range [1, inf)'
             else:
                 raise Exception('Argument verbose must be only integer or None')
-
-    def _df_check(func):
-        """Decorator for check X argument
-        """
-        def inner(*args, **kwargs):
-            key = kwargs['X'] if 'X' in kwargs.keys() else args[1]
-            if (isinstance(key, pd.DataFrame)) | (isinstance(key, np.ndarray)):
-                    assert \
-                    len(key) > 0, \
-                    'Argument X must be only pandas DataFrame or numpy ndarray and not empty'
-            else:
-                raise Exception('Argument X must be only pandas DataFrame or numpy ndarray')
-            return func(*args, **kwargs)
-        return inner
 
     @_df_check
     def fit(self, 

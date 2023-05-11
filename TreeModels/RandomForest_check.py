@@ -14,6 +14,7 @@ X_train_cl, X_test_cl, y_train_cl, y_test_cl = train_test_split(X_cl, y_cl, test
 classifier = MyRandomForestClassifier(n_estimators=5, min_samples_split=4, max_depth=5)
 classifier.fit(X=X_train_cl,y=y_train_cl)
 pred = classifier.predict(X = X_test_cl)
+pred = (pred > 0.5).astype(int)
 
 print("MY_CLASSIFICATION")
 print('precision', precision_score(y_test_cl, pred))
