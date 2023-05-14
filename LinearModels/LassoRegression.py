@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.linear_model import Lasso
 from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_absolute_percentage_error, r2_score
@@ -19,18 +20,13 @@ class LassoRegressionGD:
     """
 
     def __init__(self,
-                random_state:int=None,
-                plot_loss:bool=False):
+                random_state:int=None):
 
         assert\
             (isinstance(random_state, int))|(random_state is None),\
             f'N_iterations must be only integer and > 0. Receive {type(random_state)} = {random_state}.'
-        assert\
-            isinstance(plot_loss, bool),\
-            f'plot_loss must be only bool. Receive {type(plot_loss)} = {plot_loss}.'
         
         self.__random_state = random_state
-        self.__plot_loss = plot_loss
 
         np.random.seed(seed=self.__random_state)
 
@@ -102,7 +98,7 @@ class LassoRegressionGD:
         # Update free member b
         self.intercept_ -= (self.__learning_rate * gradients["derivative_bias"])
 
-    def __plot_cost(self):
+    def plot_cost(self):
         """Show loss curve
         """
         len_cost = len(self.cost_list)
@@ -129,8 +125,8 @@ class LassoRegressionGD:
         return (weights, bias)
 
     def fit(self, 
-            X, 
-            y,
+            X:pd.DataFrame or np.ndarray, 
+            y:pd.Series or np.ndarray,
             batch_size:int=None,
             learning_rate:float=0.001,
             C:float=1.0,
@@ -190,9 +186,6 @@ class LassoRegressionGD:
                                         y=y)
             else:
                 break
-        if self.__plot_loss:
-            #Plot
-            self.__plot_cost()
         return self
 
     def predict(self, 
@@ -220,8 +213,7 @@ X = scaler.fit_transform(X)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=seed)
 
 #Use class LinearRegressionGD
-lin_reg = LassoRegressionGD(random_state=seed,
-                            plot_loss=True)
+lin_reg = LassoRegressionGD(random_state=seed)
 lin_reg.fit(X=X_train,
             y=y_train,
             learning_rate=0.01,

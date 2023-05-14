@@ -10,8 +10,7 @@ from sklearn.datasets import make_classification
 class LogisticRegressionGD:
     def __init__(self,
                 penalty:str=None,
-                random_state:int=None,
-                plot_loss:bool=False):
+                random_state:int=None):
         """_summary_
 
         Args:
@@ -25,14 +24,9 @@ class LogisticRegressionGD:
         assert\
             (isinstance(random_state, int))|(random_state is None),\
             f'N_iterations must be only integer and > 0. Receive {type(random_state)} = {random_state}.'
-        assert\
-            isinstance(plot_loss, bool),\
-            f'plot_loss must be only bool. Receive {type(plot_loss)} = {plot_loss}.'
         
         self.__random_state = random_state
         self.__penalty = penalty
-        self.__plot_loss = plot_loss
-
         np.random.seed(seed=self.__random_state)
     
     def __check_params(self,
@@ -129,7 +123,7 @@ class LogisticRegressionGD:
         # Update free member b
         self.intercept_ -= self.__learning_rate * gradients["derivative_bias"]
 
-    def __plot_cost(self):
+    def plot_cost(self):
         """Show loss curve
         """
         len_cost = len(self.cost_list)
@@ -158,8 +152,8 @@ class LogisticRegressionGD:
         return weights, bias
     
     def fit(self, 
-            X, 
-            y,
+            X:pd.DataFrame or np.ndarray, 
+            y:pd.Series or np.ndarray,
             batch_size:int=None,
             learning_rate:float=0.001,
             C:float=1.0,
@@ -221,9 +215,6 @@ class LogisticRegressionGD:
                                         y=y)
             else:
                 break
-        if self.__plot_loss:
-            #Plot
-            self.__plot_cost()
         return self
     
     def predict(self, X):
@@ -258,8 +249,7 @@ x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 #Use class LogisticRegressionGD
 
 log_reg = LogisticRegressionGD(penalty='l2',
-                                random_state=42,
-                                plot_loss=True) # l1, l2, elasticnet
+                                random_state=42) # l1, l2, elasticnet
 log_reg.fit(X = x_train, 
             y = y_train, 
             C = 0.01, 
