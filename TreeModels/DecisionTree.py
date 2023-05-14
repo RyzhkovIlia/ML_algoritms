@@ -225,7 +225,17 @@ class _DecisionBuild(_DecisionInfo):
             _type_: Self fit
         """
         if isinstance(X, np.ndarray)==False:
-            X, y = np.array(X), np.array(y)
+            self.n_features = X.shape[1]
+            self.feature_names_ = np.array(X.columns)
+            X = np.array(X)
+        
+        if (isinstance(y, pd.Series)) | (isinstance(y, np.ndarray)):
+            assert \
+            len(y) == len(X), \
+            'Argument y must be only pandas Series and has some X len'
+        else:
+            raise Exception('Argument y must be only pandas Series and has some X len')
+        
         y = y.reshape(-1,1)
         dataset = np.concatenate((X, y), axis=1)
         self.__root = self.__build_tree(dataset=dataset)
@@ -295,9 +305,6 @@ class DecisionTreeClass(_DecisionBuild):
         
         # initialize the root of the tree 
         self.__root = None
-        # stopping conditions
-        self.__min_samples_split = min_samples_split
-        self.__max_depth = max_depth
         super().__init__(task='class', 
                         min_samples_split=min_samples_split,
                         max_depth=max_depth)
@@ -361,9 +368,6 @@ class DecisionTreeReg(_DecisionBuild):
         
         # initialize the root of the tree 
         self.__root = None
-        # stopping conditions
-        self.__min_samples_split = min_samples_split
-        self.__max_depth = max_depth
         super().__init__(task='reg', 
                         min_samples_split=min_samples_split,
                         max_depth=max_depth)

@@ -4,6 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.metrics import recall_score, precision_score, mean_absolute_error, mean_squared_error, mean_absolute_percentage_error, r2_score
 from KNN import KNNRegressor, KNNClassifier
+import pandas as pd
 
 # Create dataset
 seed = 42

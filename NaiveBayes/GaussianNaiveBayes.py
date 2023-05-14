@@ -2,6 +2,20 @@ import math
 import numpy as np
 import pandas as pd
 
+def _df_check(func):
+    """Decorator for check X argument
+    """
+    def inner(*args, **kwargs):
+        key = kwargs['X'] if 'X' in kwargs.keys() else args[1]
+        if isinstance(key, pd.DataFrame):
+            assert \
+            len(key) > 0, \
+            'Argument X must be only pandas DataFrame and not empty'
+        else:
+            raise Exception('Argument X must be only pandas DataFrame')
+        return func(*args, **kwargs)
+    return inner
+
 class GaussianNaiveBayes:
     def __init__(self):
 
@@ -43,6 +57,7 @@ class GaussianNaiveBayes:
                 self.__likelihoods[feature][outcome]['variance'] = \
                     self.__X_train[feature][self.__y_train[self.__y_train == outcome].index.values.tolist()].var()
 
+    @_df_check
     def fit(self, 
             X:pd.DataFrame, 
             y:pd.Series):
@@ -59,6 +74,12 @@ class GaussianNaiveBayes:
         # Defining features
         self.__features = list(X.columns)
         self.__X_train = X
+        if isinstance(y, pd.Series):
+            assert \
+            len(y) == len(X), \
+            'Argument y must be only pandas Series and has some X len'
+        else:
+            raise Exception('Argument y must be only pandas Series and has some X len')
         self.__y_train = y
         # Data dimensionality
         self.__train_size = X.shape[0]
@@ -80,6 +101,7 @@ class GaussianNaiveBayes:
 
         return self
     
+    @_df_check
     def predict(self, 
                 X:pd.DataFrame)->np.array:
         """Predicts the value after the model has been trained.

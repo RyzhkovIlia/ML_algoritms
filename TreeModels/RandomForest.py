@@ -104,8 +104,8 @@ class _RandomForestTools():
         else:
             raise Exception('Argument y must be only pandas Series or numpy ndarray and has some X len')
         
-        if ~isinstance(X, pd.DataFrame):   
-            X, y = pd.DataFrame(X), pd.Series(y)
+        if isinstance(X, pd.DataFrame)==False:   
+            X = pd.DataFrame(X)
         x_samples, self.n_features = X.shape
         self.feature_names_ = np.array(X.columns)
         rf_models = []
@@ -194,7 +194,7 @@ class MyRandomForestRegressor(_RandomForestTools):
         (isinstance(smooth, int)) | (smooth is None), \
         'Argument smooth must be only integer or None'
         
-        if ~isinstance(X, pd.DataFrame):   
+        if isinstance(X, pd.DataFrame)==False:   
             X = pd.DataFrame(X)
         if smooth != None and (smooth>=self.__n_estimators//2 or smooth < 1):
             raise Exception(f"Smooth must be <= {self.__n_estimators//2} and > 0")
@@ -273,7 +273,7 @@ class MyRandomForestClassifier(_RandomForestTools):
         y : ndarray of shape (n_samples,)
             The predicted values.
         """
-        if ~isinstance(X, pd.DataFrame):   
+        if isinstance(X, pd.DataFrame)==False:   
             X = pd.DataFrame(X)
         results = [model.predict(X) for model in self.__rf_models]
         result_data = pd.DataFrame(results)
@@ -294,7 +294,7 @@ class MyRandomForestClassifier(_RandomForestTools):
         y : ndarray of shape (n_samples,)
             The predicted values.
         """
-        if ~isinstance(X, pd.DataFrame):   
+        if isinstance(X, pd.DataFrame)==False:   
             X = pd.DataFrame(X)
         results = [model.predict(X) for model in self.__rf_models]
         result_data = pd.DataFrame(results)

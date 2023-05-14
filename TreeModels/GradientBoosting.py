@@ -116,6 +116,10 @@ class GradientBoostingRegression(DecisionTreeReg):
         """
 
         self.__check_params()
+        if isinstance(X, pd.DataFrame):   
+            self.n_features = X.shape[1]
+            self.feature_names_ = np.array(X.columns)
+            
         if (isinstance(y, pd.Series)) | (isinstance(y, np.ndarray)):
             assert \
             len(y) == len(X), \
