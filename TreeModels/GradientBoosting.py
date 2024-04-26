@@ -135,7 +135,7 @@ class GradientBoostingRegression(DecisionTreeReg):
                                     min_samples_split=self.__min_samples_split)
             tree.fit(X, residual)
             predict_train = tree.predict(X)
-            y_pred += self.__learning_rate * predict_train
+            y_pred -= self.__learning_rate * 2 * np.sum(y - predict_train)
             self.__trees.append(tree)
             if verbose is not None:
                 if _ % verbose == 0:
